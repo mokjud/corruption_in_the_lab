@@ -1,0 +1,20 @@
+---
+title: "corruption"
+author: "fedor anna, mokos judit"
+date: "19/12/2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## effect size
+
+
+## random or non-random, khi square
+
+
+## comparing the four group, Two-way ANOVA
+
+
+## LM? 
