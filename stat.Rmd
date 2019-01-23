@@ -8,6 +8,43 @@ output: word_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Description of the experiment
+
+Two-by-two design:
+- Game type: simple game or charity game
+- Simulated partner: honest partner or dishonest partner
+
+Participants are randomly assigned to one of the four conditions:
+- SH: simple game with honest partner
+- SD: simple ganme with dishonest partner
+- CH: charity game with honest partner
+- CD: charity game with dishonest partner
+
+Each participant plays 20 rounds of the game.A round of game consists of the following steps:
+- Participant learns the reported number of the supposed partner
+- Participant throws a dice
+- Participant reports the number 
+- Both players get paid according to the reported numbers
+- In the charity game a charity foundation gets a small amount of donation
+
+Data from participants: 20 reported numbers, Questionnaire, Finger lenghts, Saliva ???
+Predictors: condition, (age, gender), ???
+
+Data frame column names:
+ID, 
+Game, 
+Partner, 
+V1, 
+V2, 
+... 
+V20, 
+Q1, 
+Q2, 
+... 
+Q?, 
+F2, 
+F4, 
+S???
 ## effect size
 
 
