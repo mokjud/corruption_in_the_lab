@@ -1,8 +1,8 @@
 ---
-title: "corruption"
-author: "fedor anna, mokos judit"
+title: "Corruption in the lab"
+author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-output: word_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -45,6 +45,18 @@ Q?,
 F2, 
 F4, 
 S???
+
+# Figures
+
+## Individual behavior
+These should be based on Weisel & Shalvi, 2015, Fig. S10.
+One figure per participant.
+
+## Temperature plots to demonstrate the distribution of reported numbers 
+Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.
+One figure per condition.
+
+# Statistics
 ## effect size
 
 
