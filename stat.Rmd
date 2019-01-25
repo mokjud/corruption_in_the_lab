@@ -32,20 +32,15 @@ Data from participants: 20 reported numbers, Questionnaire, Finger lenghts, Sali
 Predictors: condition, (age, gender), ???
 
 Data frame column names:
-ID, 
-Game, 
-Partner, 
-V1, 
-V2, 
-... 
-V20, 
-Q1, 
-Q2, 
-... 
-Q?, 
-F2, 
-F4, 
-S???
+Each throw is an observation:
+ID
+Game
+Partner
+ValueA (partenr hanyast dobott)
+ValueB (hanyast dobott)
+Questionnaire ?
+Finger ?
+Saliva ?
 
 # Figures
 
@@ -56,7 +51,7 @@ One plot per participant. Plots from the same condition should be compiled into 
 
 ```
 
-## Temperature plots to demonstrate the distribution of reported numbers 
+## Heat map to demonstrate the distribution of reported numbers 
 Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.
 One figure per condition.
 ```{r}
@@ -69,13 +64,17 @@ One box for each condition on the same figure
 
 ```
 
-## Box plots of the mean reports
+## Box plots of the mean reports: NINCS ÉRTELME
 One box for each condition on the same figure
 ```{r}
 
 ```
 
 # Statistics
+
+## Distribution of reported numbers 
+Kolmogorov-Smirnov
+One per condition
 
 ## The number of doubles
 Each participant ("dyad"") is a single observation: the number of reported doubles
@@ -86,7 +85,7 @@ Separately for each condition
 
 ```
 
-## Mean reports: VAN ENNEK ÉRTELME NÁLUNK?
+## Mean reports: VAN ENNEK ÉRTELME NÁLUNK? NINCS
 Each participant ("dyad"") is a single observation: the mean of the reported numbers
 Wilcoxon signed-rank U test
 Expected value: 3.5
@@ -112,9 +111,6 @@ Dependent variable: number of reported doubles (interval)
 Predictors: game (binary), partner (binary), finger length (interval), hormone levels (interval)
 
 ## random or non-random, khi square
-
-
-## comparing the four group, Two-way ANOVA
 
 
 ## LM? 
