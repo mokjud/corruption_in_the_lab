@@ -10,13 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # Description of the experiment
 
+Sequential dyadic die-rolling task
 Two-by-two design:
-- Game type: simple game or charity game
-- Simulated partner: honest partner or dishonest partner
+- Game: simple game or charity game
+- Partner: simulated honest partner or simulated dishonest partner
 
 Participants are randomly assigned to one of the four conditions:
 - SH: simple game with honest partner
-- SD: simple ganme with dishonest partner
+- SD: simple game with dishonest partner
 - CH: charity game with honest partner
 - CD: charity game with dishonest partner
 
@@ -48,17 +49,67 @@ S???
 
 # Figures
 
-## Individual behavior
+## Scatter plots of individual behavior
 These should be based on Weisel & Shalvi, 2015, Fig. S10.
-One figure per participant.
+One plot per participant. Plots from the same condition should be compiled into one composite figure.
+```{r}
+
+```
 
 ## Temperature plots to demonstrate the distribution of reported numbers 
 Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.
 One figure per condition.
+```{r}
+
+```
+
+## Box plots of the mean number of doubles
+One box for each condition on the same figure
+```{r}
+
+```
+
+## Box plots of the mean reports
+One box for each condition on the same figure
+```{r}
+
+```
 
 # Statistics
-## effect size
 
+## The number of doubles
+Each participant ("dyad"") is a single observation: the number of reported doubles
+Wilcoxon signed-rank U test
+Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
+Separately for each condition
+```{r}
+
+```
+
+## Mean reports: VAN ENNEK ÉRTELME NÁLUNK?
+Each participant ("dyad"") is a single observation: the mean of the reported numbers
+Wilcoxon signed-rank U test
+Expected value: 3.5
+Separately for each condition
+```{r}
+
+```
+## Compare the number of doubles in pairs of conditions
+Mann-Whitney U test
+```{r}
+
+```
+
+## Effect size
+To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a chaeting A
+Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015
+```{r}
+
+```
+
+## Linear regression to test the effect of predictors
+Dependent variable: number of reported doubles (interval)
+Predictors: game (binary), partner (binary), finger length (interval), hormone levels (interval)
 
 ## random or non-random, khi square
 
