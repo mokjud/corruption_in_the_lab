@@ -21,7 +21,7 @@ Participants are randomly assigned to one of the four conditions:
 - CH: charity game with honest partner
 - CD: charity game with dishonest partner
 
-Each participant plays 20 rounds of the game.A round of game consists of the following steps:
+Each participant plays 20 rounds of the game. A round of game consists of the following steps:
 - Participant learns the reported number of the supposed partner
 - Participant throws a dice
 - Participant reports the number 
@@ -31,17 +31,49 @@ Each participant plays 20 rounds of the game.A round of game consists of the fol
 Data from participants: 20 reported numbers, Questionnaire, Finger lenghts, Saliva ???
 Predictors: condition, (age, gender), ???
 
-Data frame column names:
-Each row is a dice roll:
-ID of participant
-Game
-Partner
-ValueA (partner hanyast dobott)
-ValueB (hanyast dobott)
-Questionnaire ?
-Fingerratio ?
-Saliva ?
+Data frame column names (each row is a dice roll):
+- ID: random ID of participant
+- Game: simple or charity (S/C)
+- Partner: honest or dishonest (H/D)
+- Index: index of round of game
+- ValueA: value of simulated dice roll
+- ValueB: value of participant's reported dice roll
+- Q1: answer to first questionnaire quiestion
+- Q2: answer to second questionnaire question
+- Fingerratio: ratio of two fingers
+- Saliva: NO IDEA
 
+# Dummy data
+```{r}
+
+N = 10 # number of participants in the dummy data
+
+IDs <- sample(10000:19999, N)
+games <- sample(c("S", "C"), N, replace=TRUE)
+partners <- sample(c("H", "D"), 10, replace=TRUE)
+A_honest <- sample(1:6, 20, replace=TRUE)
+A_dishonest <- sample(4:6, 20, replace=TRUE)
+fingerratios <- rnorm(N, mean = 1, sd = 0.1)
+salivas <- rnorm(N, mean = 3, sd = 1)
+
+ValueAs <- vector("integer", N*20)
+for (i in 1:N) {
+  if (partners[i] == "H") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_honest}
+  if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
+}
+
+rawdata <- data.frame("ID" = rep(IDs, times = 1, length.out = NA, each = 20), 
+                      "Game" = rep(games, times = 1, length.out = NA, each = 20), 
+                      "Partner" = rep(partners, times = 1, length.out = NA, each = 20), 
+                      "Index" = rep(1:20, N), 
+                      "ValueA" = ValueAs, 
+                      "ValueB" = sample(1:6, N*20, replace = TRUE), 
+                      "Q1" = sample(letters, N*20, replace = TRUE), 
+                      "Q2" = sample(letters, N*20, replace = TRUE),
+                      "Fingerratio" = rep(fingerratios, times = 1, length.out = NA, each = 20),
+                      "Saliva" = rep(salivas, times = 1, length.out = NA, each = 20))
+
+```
 # Figures
 
 ## Scatter plots of individual behavior
