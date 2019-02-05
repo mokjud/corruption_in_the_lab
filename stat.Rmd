@@ -32,14 +32,14 @@ Data from participants: 20 reported numbers, Questionnaire, Finger lenghts, Sali
 Predictors: condition, (age, gender), ???
 
 Data frame column names:
-Each throw is an observation:
-ID
+Each row is a dice roll:
+ID of participant
 Game
 Partner
-ValueA (partenr hanyast dobott)
+ValueA (partner hanyast dobott)
 ValueB (hanyast dobott)
 Questionnaire ?
-Finger ?
+Fingerratio ?
 Saliva ?
 
 # Figures
