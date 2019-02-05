@@ -2,49 +2,53 @@
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
+library(rmarkdown)
 ```
 # Description of the experiment
+    
+Sequential dyadic die-rolling task  
 
-Sequential dyadic die-rolling task
 Two-by-two design:
-- Game: simple game or charity game
-- Partner: simulated honest partner or simulated dishonest partner
+    
+* Game: simple game or charity game
+* Partner: simulated honest partner or simulated dishonest partner  
 
 Participants are randomly assigned to one of the four conditions:
-- SH: simple game with honest partner
-- SD: simple game with dishonest partner
-- CH: charity game with honest partner
-- CD: charity game with dishonest partner
+
+* SH: simple game with honest partner
+* SD: simple game with dishonest partner
+* CH: charity game with honest partner
+* CD: charity game with dishonest partner  
 
 Each participant plays 20 rounds of the game. A round of game consists of the following steps:
-- Participant learns the reported number of the supposed partner
-- Participant throws a dice
-- Participant reports the number 
-- Both players get paid according to the reported numbers
-- In the charity game a charity foundation gets a small amount of donation
 
-Data from participants: 20 reported numbers, Questionnaire, Finger lenghts, Saliva ???
-Predictors: condition, (age, gender), ???
-
-Data frame column names (each row is a dice roll):
-- ID: random ID of participant
-- Game: simple or charity (S/C)
-- Partner: honest or dishonest (H/D)
-- Index: index of round of game
-- ValueA: value of simulated dice roll
-- ValueB: value of participant's reported dice roll
-- Q1: answer to first questionnaire quiestion
-- Q2: answer to second questionnaire question
-- Fingerratio: ratio of two fingers
-- Saliva: NO IDEA
+1. Participant learns the reported number of the supposed partner
+2. Participant throws a dice
+3. Participant reports the number 
+4. Both players get paid according to the reported numbers
+5. In the charity game a charity foundation gets a small amount of donation  
 
 # Dummy data
-```{r}
+
+Data frame column names (each row is a dice roll):
+
+* ID: random ID of participant
+* Game: simple or charity (S/C)
+* Partner: honest or dishonest (H/D)
+* Index: index of round of game
+* ValueA: value of simulated dice roll
+* ValueB: value of participant's reported dice roll
+* Q1: answer to first questionnaire quiestion
+* Q2: answer to second questionnaire question
+* Fingerratio: ratio of two fingers
+* Saliva: NO IDEA  
+
+```{r generate dummy data}
 
 N = 10 # number of participants in the dummy data
 
