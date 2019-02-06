@@ -9,6 +9,7 @@ output: html_document
 rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
 library(rmarkdown)
+library(dplyr)
 ```
 # Description of the experiment
     
@@ -126,6 +127,7 @@ Mean reports: does not make sense in our case, because player A is simulated
 # Statistics
 
 ## Number of participants in each condition
+
 
 ## Distribution of reported numbers 
 Kolmogorov-Smirnov, one per condition.
