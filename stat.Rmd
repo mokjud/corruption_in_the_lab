@@ -101,6 +101,13 @@ for (i in 1:nrow(rawdata)){
 rawdata$Double <- doubles
 
 ```
+# Data checking
+
+* Check if every participant had 20 rounds
++ Delete participants who had less than 20 rounds
++ Delete excess rounds for each participant
+* Check if there is any missing data (columns)
+
 # Figures
 
 ## Scatter plots of individual behavior
@@ -119,27 +126,73 @@ One figure per condition.
 
 ## Box plots of the mean number of doubles
 One box for each condition on the same figure  
-Mean reports: does not make sense in our case, because player A is simulated
+(Mean reports: does not make sense in our case, because player A is simulated)
 ```{r}
 
 ```
 
 # Statistics
 
-## Number of participants in each condition
+## Summary of data
+```{r}
+participants <- summarize(group_by(rawdata, ID), 
+                          Condition = unique(Condition), 
+                          Nbof_doubles = sum(Double), 
+                          Avg_report = mean(ValueB))
 
+groups <- summarize(group_by(participants, Condition),
+                    Nbof_participants = n_distinct(ID),
+                    Nbof_doubles = sum(Nbof_doubles),
+                    Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
+                    Avg_avg_report = mean(Avg_report))
+
+print(groups)
+```
 
 ## Distribution of reported numbers 
-Kolmogorov-Smirnov, one per condition.
+Kolmogorov-Smirnov, one per condition.  
+Expected if they don't cheat: uniform distribution 1:6
+Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)
+_NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!_
+_Bocs, látom, hogy rosszul használom a ks.test-et! Ha te ismered a függvényt, javítsd ki, légyszi!_
+```{r}
+group_SH <- filter(rawdata, Condition == "SH")
+group_SD <- filter(rawdata, Condition == "SD")
+group_CH <- filter(rawdata, Condition == "CH")
+group_CD <- filter(rawdata, Condition == "CD")
+
+ks.test(group_SH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
+ks.test(group_SD$ValueB, punif(1:6, 1, 6), alternative = "less")
+ks.test(group_CH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
+ks.test(group_CD$ValueB, punif(1:6, 1, 6), alternative = "less")
+
+# just for fun
+ks.test(group_SH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
+ks.test(group_SD$ValueA, punif(1:6, 1, 6), alternative = "less")
+ks.test(group_CH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
+ks.test(group_CD$ValueA, punif(1:6, 1, 6), alternative = "less")
+
+```
 
 ## The number of doubles
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition
 Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 Separately for each condition
-(we could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)
-```{r}
+(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)
 
+```{r}
+participants_group_SH <- filter(participants, Condition == "SH")
+wilcox.test(participants_group_SH$Nbof_doubles, 3.33, alternative = "g") #small sample size
+
+participants_group_SD <- filter(participants, Condition == "SD")
+wilcox.test(participants_group_SD$Nbof_doubles, 3.33, alternative = "g")
+
+participants_group_CH <- filter(participants, Condition == "CH")
+wilcox.test(participants_group_CH$Nbof_doubles, 3.33, alternative = "g")
+
+participants_group_CD <- filter(participants, Condition == "CD")
+wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
