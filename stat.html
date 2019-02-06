@@ -381,8 +381,6 @@ $(document).ready(function () {
 <p>Sequential dyadic die-rolling task</p>
 <p>Two-by-two design:</p>
 <ul>
-<li>Item 1</li>
-<li>Item 2</li>
 <li>Game: simple game or charity game</li>
 <li>Partner: simulated honest partner or simulated dishonest partner</li>
 </ul>
@@ -406,52 +404,51 @@ $(document).ready(function () {
 <h1>Dummy data</h1>
 <p>Data frame column names (each row is a dice roll):</p>
 <ul>
-<li>ID: random ID of participant</li>
+<li>ID: random ID of participant (10000:99999)</li>
 <li>Game: simple or charity (S/C)</li>
 <li>Partner: honest or dishonest (H/D)</li>
-<li>Index: index of round of game</li>
-<li>ValueA: value of simulated dice roll</li>
-<li>ValueB: value of participant’s reported dice roll</li>
-<li>Q1: answer to first questionnaire quiestion</li>
-<li>Q2: answer to second questionnaire question</li>
-<li>Fingerratio: ratio of two fingers</li>
-<li>Saliva: NO IDEA</li>
+<li>Condition: one of the four experimental conditions (SH, SD, CH, CD)</li>
+<li>Index: index of round of game (1:20)</li>
+<li>ValueA: value of simulated dice roll (1:6)</li>
+<li>ValueB: value of participant’s reported dice roll (1:6)</li>
+<li>Double: whether the participant reported a double (1/0)</li>
+<li>Q1: answer to first questionnaire quiestion (a random letter)</li>
+<li>Q2: answer to second questionnaire question (a random letter)</li>
+<li>Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)</li>
+<li>Saliva: ??? (normal distribution, mean=3, sd=1)</li>
 </ul>
-<pre><code>##  [1] &quot;ID&quot;          &quot;Game&quot;        &quot;Partner&quot;     &quot;Index&quot;       &quot;ValueA&quot;     
-##  [6] &quot;ValueB&quot;      &quot;Q1&quot;          &quot;Q2&quot;          &quot;Fingerratio&quot; &quot;Saliva&quot;</code></pre>
 </div>
 <div id="figures" class="section level1">
 <h1>Figures</h1>
 <div id="scatter-plots-of-individual-behavior" class="section level2">
 <h2>Scatter plots of individual behavior</h2>
-<p>These should be based on Weisel &amp; Shalvi, 2015, Fig. S10. One plot per participant. Plots from the same condition should be compiled into one composite figure.</p>
+<p>These should be based on Weisel &amp; Shalvi, 2015, Fig. S10.<br />
+One plot per participant. Plots from the same condition should be compiled into one composite figure.</p>
 </div>
 <div id="heat-map-to-demonstrate-the-distribution-of-reported-numbers" class="section level2">
 <h2>Heat map to demonstrate the distribution of reported numbers</h2>
-<p>Like Weisel &amp; Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them. One figure per condition.</p>
+<p>Like Weisel &amp; Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.<br />
+One figure per condition.</p>
 </div>
 <div id="box-plots-of-the-mean-number-of-doubles" class="section level2">
 <h2>Box plots of the mean number of doubles</h2>
-<p>One box for each condition on the same figure</p>
-</div>
-<div id="box-plots-of-the-mean-reports-nincs-ertelme" class="section level2">
-<h2>Box plots of the mean reports: NINCS ÉRTELME</h2>
-<p>One box for each condition on the same figure</p>
+<p>One box for each condition on the same figure<br />
+Mean reports: does not make sense in our case, because player A is simulated</p>
 </div>
 </div>
 <div id="statistics" class="section level1">
 <h1>Statistics</h1>
+<div id="number-of-participants-in-each-condition" class="section level2">
+<h2>Number of participants in each condition</h2>
+</div>
 <div id="distribution-of-reported-numbers" class="section level2">
 <h2>Distribution of reported numbers</h2>
-<p>Kolmogorov-Smirnov One per condition</p>
+<p>Kolmogorov-Smirnov, one per condition.</p>
 </div>
 <div id="the-number-of-doubles" class="section level2">
 <h2>The number of doubles</h2>
-<p>Each participant (“dyad”&quot;) is a single observation: the number of reported doubles Wilcoxon signed-rank U test Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6) Separately for each condition</p>
-</div>
-<div id="mean-reports-van-ennek-ertelme-nalunk-nincs" class="section level2">
-<h2>Mean reports: VAN ENNEK ÉRTELME NÁLUNK? NINCS</h2>
-<p>Each participant (“dyad”&quot;) is a single observation: the mean of the reported numbers Wilcoxon signed-rank U test Expected value: 3.5 Separately for each condition</p>
+<p>Each participant (“dyad”) is a single observation: the number of reported doubles<br />
+Wilcoxon signed-rank U test, separately for each condition Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6) Separately for each condition (we could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)</p>
 </div>
 <div id="compare-the-number-of-doubles-in-pairs-of-conditions" class="section level2">
 <h2>Compare the number of doubles in pairs of conditions</h2>
@@ -459,17 +456,12 @@ $(document).ready(function () {
 </div>
 <div id="effect-size" class="section level2">
 <h2>Effect size</h2>
-<p>To estimate the effect size of the honest-dishonest treatment let’s compare the choices of participant Bs, who were paired with an honest A vs. a chaeting A Data: from the supplementary material of Weisel&amp;Shalvy, 2015 and from Wouda et al., 2015</p>
+<p>To estimate the effect size of the honest-dishonest treatment let’s compare the choices of participant Bs, who were paired with an honest A vs. a cheating A Data: from the supplementary material of Weisel&amp;Shalvy, 2015 and from Wouda et al., 2015</p>
 </div>
 <div id="linear-regression-to-test-the-effect-of-predictors" class="section level2">
 <h2>Linear regression to test the effect of predictors</h2>
-<p>Dependent variable: number of reported doubles (interval) Predictors: game (binary), partner (binary), finger length (interval), hormone levels (interval)</p>
-</div>
-<div id="random-or-non-random-khi-square" class="section level2">
-<h2>random or non-random, khi square</h2>
-</div>
-<div id="lm" class="section level2">
-<h2>LM?</h2>
+<p>Dependent variable: number of reported doubles (interval)<br />
+Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)</p>
 </div>
 </div>
 

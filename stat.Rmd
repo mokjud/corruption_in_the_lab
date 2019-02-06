@@ -6,8 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
 library(rmarkdown)
+library(dplyr)
 ```
 # Description of the experiment
     
@@ -37,28 +39,35 @@ Each participant plays 20 rounds of the game. A round of game consists of the fo
 
 Data frame column names (each row is a dice roll):
 
-* ID: random ID of participant
+* ID: random ID of participant (10000:99999)
 * Game: simple or charity (S/C)
 * Partner: honest or dishonest (H/D)
-* Index: index of round of game
-* ValueA: value of simulated dice roll
-* ValueB: value of participant's reported dice roll
-* Q1: answer to first questionnaire quiestion
-* Q2: answer to second questionnaire question
-* Fingerratio: ratio of two fingers
-* Saliva: NO IDEA  
+* Condition: one of the four experimental conditions (SH, SD, CH, CD)
+* Index: index of round of game (1:20)
+* ValueA: value of simulated dice roll (1:6)
+* ValueB: value of participant's reported dice roll (1:6)
+* Double: whether the participant reported a double (1/0)
+* Q1: answer to first questionnaire quiestion (a random letter)
+* Q2: answer to second questionnaire question (a random letter)
+* Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
+* Saliva: ??? (normal distribution, mean=3, sd=1)
 
 ```{r generate dummy data}
 
 N = 10 # number of participants in the dummy data
 
-IDs <- sample(10000:19999, N)
+IDs <- sample(10000:99999, N)
 games <- sample(c("S", "C"), N, replace=TRUE)
-partners <- sample(c("H", "D"), 10, replace=TRUE)
+partners <- sample(c("H", "D"), N, replace=TRUE)
+
+conditions = vector("character", N)
+for (i in 1:N) {
+  conditions[i] <- paste(games[i], partners[i], sep = "")
+}
+
 A_honest <- sample(1:6, 20, replace=TRUE)
 A_dishonest <- sample(4:6, 20, replace=TRUE)
-fingerratios <- rnorm(N, mean = 1, sd = 0.1)
-salivas <- rnorm(N, mean = 3, sd = 1)
+
 
 ValueAs <- vector("integer", N*20)
 for (i in 1:N) {
@@ -66,69 +75,73 @@ for (i in 1:N) {
   if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
 }
 
+fingerratios <- rnorm(N, mean = 1, sd = 0.1)
+salivas <- rnorm(N, mean = 3, sd = 1)
+
 rawdata <- data.frame("ID" = rep(IDs, times = 1, length.out = NA, each = 20), 
                       "Game" = rep(games, times = 1, length.out = NA, each = 20), 
                       "Partner" = rep(partners, times = 1, length.out = NA, each = 20), 
+                      "Condition" = rep(conditions, times = 1, length.out = NA, each = 20),
                       "Index" = rep(1:20, N), 
                       "ValueA" = ValueAs, 
                       "ValueB" = sample(1:6, N*20, replace = TRUE), 
+                      "Double" = vector("integer", N*20),
                       "Q1" = sample(letters, N*20, replace = TRUE), 
                       "Q2" = sample(letters, N*20, replace = TRUE),
                       "Fingerratio" = rep(fingerratios, times = 1, length.out = NA, each = 20),
                       "Saliva" = rep(salivas, times = 1, length.out = NA, each = 20))
 
+doubles <- vector("integer", N*20)
+for (i in 1:nrow(rawdata)){
+  if (rawdata$ValueA[i] == rawdata$ValueB[i]){
+      doubles[i] <- 1
+  }
+}
+
+rawdata$Double <- doubles
+
 ```
 # Figures
 
 ## Scatter plots of individual behavior
-These should be based on Weisel & Shalvi, 2015, Fig. S10.
+These should be based on Weisel & Shalvi, 2015, Fig. S10.  
 One plot per participant. Plots from the same condition should be compiled into one composite figure.
 ```{r}
 
 ```
 
 ## Heat map to demonstrate the distribution of reported numbers 
-Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.
+Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.  
 One figure per condition.
 ```{r}
 
 ```
 
 ## Box plots of the mean number of doubles
-One box for each condition on the same figure
-```{r}
-
-```
-
-## Box plots of the mean reports: NINCS ÉRTELME
-One box for each condition on the same figure
+One box for each condition on the same figure  
+Mean reports: does not make sense in our case, because player A is simulated
 ```{r}
 
 ```
 
 # Statistics
 
+## Number of participants in each condition
+
+
 ## Distribution of reported numbers 
-Kolmogorov-Smirnov
-One per condition
+Kolmogorov-Smirnov, one per condition.
 
 ## The number of doubles
-Each participant ("dyad"") is a single observation: the number of reported doubles
-Wilcoxon signed-rank U test
+Each participant ("dyad") is a single observation: the number of reported doubles  
+Wilcoxon signed-rank U test, separately for each condition
 Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 Separately for each condition
+(we could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)
 ```{r}
 
 ```
 
-## Mean reports: VAN ENNEK ÉRTELME NÁLUNK? NINCS
-Each participant ("dyad"") is a single observation: the mean of the reported numbers
-Wilcoxon signed-rank U test
-Expected value: 3.5
-Separately for each condition
-```{r}
-
-```
 ## Compare the number of doubles in pairs of conditions
 Mann-Whitney U test
 ```{r}
@@ -136,17 +149,13 @@ Mann-Whitney U test
 ```
 
 ## Effect size
-To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a chaeting A
+To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015
 ```{r}
 
 ```
 
 ## Linear regression to test the effect of predictors
-Dependent variable: number of reported doubles (interval)
-Predictors: game (binary), partner (binary), finger length (interval), hormone levels (interval)
+Dependent variable: number of reported doubles (interval)  
+Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)
 
-## random or non-random, khi square
-
-
-## LM? 
