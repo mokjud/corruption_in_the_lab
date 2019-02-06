@@ -54,7 +54,7 @@ Data frame column names (each row is a dice roll):
 
 ```{r generate dummy data}
 
-N = 10 # number of participants in the dummy data
+N = 1000 # number of participants in the dummy data
 
 IDs <- sample(10000:99999, N)
 games <- sample(c("S", "C"), N, replace=TRUE)
@@ -112,21 +112,24 @@ rawdata$Double <- doubles
 
 ## Scatter plots of individual behavior
 These should be based on Weisel & Shalvi, 2015, Fig. S10.  
-One plot per participant. Plots from the same condition should be compiled into one composite figure.
+One plot per participant. Plots from the same condition should be compiled into one composite figure.  
+
 ```{r}
 
 ```
 
 ## Heat map to demonstrate the distribution of reported numbers 
 Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.  
-One figure per condition.
+One figure per condition.  
+
 ```{r}
 
 ```
 
 ## Box plots of the mean number of doubles
 One box for each condition on the same figure  
-(Mean reports: does not make sense in our case, because player A is simulated)
+(Mean reports: does not make sense in our case, because player A is simulated)  
+
 ```{r}
 
 ```
@@ -151,10 +154,11 @@ print(groups)
 
 ## Distribution of reported numbers 
 Kolmogorov-Smirnov, one per condition.  
-Expected if they don't cheat: uniform distribution 1:6
-Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)
-_NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!_
-_Bocs, látom, hogy rosszul használom a ks.test-et! Ha te ismered a függvényt, javítsd ki, légyszi!_
+Expected if they don't cheat: uniform distribution 1:6  
+Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
+_NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!_  
+_Bocs, látom, hogy rosszul használom a ks.test-et! Ha te ismered a függvényt, javítsd ki, légyszi!_  
+
 ```{r}
 group_SH <- filter(rawdata, Condition == "SH")
 group_SD <- filter(rawdata, Condition == "SD")
@@ -176,10 +180,9 @@ ks.test(group_CD$ValueA, punif(1:6, 1, 6), alternative = "less")
 
 ## The number of doubles
 Each participant ("dyad") is a single observation: the number of reported doubles  
-Wilcoxon signed-rank U test, separately for each condition
-Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
-Separately for each condition
-(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)
+Wilcoxon signed-rank U test, separately for each condition  
+Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)  
+(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)  
 
 ```{r}
 participants_group_SH <- filter(participants, Condition == "SH")
@@ -196,19 +199,36 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
-Mann-Whitney U test
-```{r}
+Mann-Whitney U test (or two-sample Wilcoxon test)  
+One-sided?  
+_Nem néztem utána, hogy alternative="less"-t, vagy "greater"-t kéne beírni. Mi azt várjuk, hogy az y>x)_
 
+The effect of dishonest partners vs honest partners in simple game and in the charity game:
+```{r}
+wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
+wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles)
+```
+
+The effect of charity vs no charity with honest partners and with dishonest partners:
+```{r}
+wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles)
+wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
 ```
 
 ## Effect size
-To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A
-Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015
+To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A  
+Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
+
 ```{r}
 
 ```
 
 ## Linear regression to test the effect of predictors
 Dependent variable: number of reported doubles (interval)  
-Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)
+Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)  
+
+```{r}
+
+```
+
 

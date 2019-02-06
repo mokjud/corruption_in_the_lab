@@ -452,100 +452,139 @@ One figure per condition.</p>
 <pre><code>## # A tibble: 4 x 5
 ##   Condition Nbof_participants Nbof_doubles Avg_nbof_doubles Avg_avg_report
 ##   &lt;fct&gt;                 &lt;int&gt;        &lt;dbl&gt;            &lt;dbl&gt;          &lt;dbl&gt;
-## 1 CD                        1            0             0              2.75
-## 2 CH                        3           17             5.67           3.58
-## 3 SD                        4           14             3.5            3.4 
-## 4 SH                        2           10             5              3.92</code></pre>
+## 1 CD                      250          821             3.28           3.49
+## 2 CH                      236          771             3.27           3.52
+## 3 SD                      260          851             3.27           3.51
+## 4 SH                      254          879             3.46           3.52</code></pre>
 </div>
 <div id="distribution-of-reported-numbers" class="section level2">
 <h2>Distribution of reported numbers</h2>
 <p>Kolmogorov-Smirnov, one per condition.<br />
-Expected if they don’t cheat: uniform distribution 1:6 Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers) NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!</p>
+Expected if they don’t cheat: uniform distribution 1:6<br />
+Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)<br />
+<em>NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!</em><br />
+<em>Bocs, látom, hogy rosszul használom a ks.test-et! Ha te ismered a függvényt, javítsd ki, légyszi!</em></p>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_SH$ValueB and punif(1:6, 1, 6)
-## D = 0.875, p-value = 0.0006783
+## D = 0.83445, p-value = 0.0004748
 ## alternative hypothesis: two-sided</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_SD$ValueB and punif(1:6, 1, 6)
-## D^- = 0.83333, p-value = 0.0004299
+## D^- = 0.83827, p-value = 0.0002198
 ## alternative hypothesis: the CDF of x lies below that of y</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_CH$ValueB and punif(1:6, 1, 6)
-## D = 0.88333, p-value = 0.000402
+## D = 0.83333, p-value = 0.0004859
 ## alternative hypothesis: two-sided</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_CD$ValueB and punif(1:6, 1, 6)
-## D^- = 0.9, p-value = 0.000566
+## D^- = 0.83333, p-value = 0.0002428
 ## alternative hypothesis: the CDF of x lies below that of y</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_SH$ValueA and punif(1:6, 1, 6)
-## D = 0.95, p-value = 0.0001626
+## D = 0.9, p-value = 0.0001215
 ## alternative hypothesis: two-sided</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_SD$ValueA and punif(1:6, 1, 6)
-## D^- = 1, p-value = 1.419e-05
+## D^- = 1, p-value = 6.23e-06
 ## alternative hypothesis: the CDF of x lies below that of y</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_CH$ValueA and punif(1:6, 1, 6)
-## D = 0.95, p-value = 0.000106
+## D = 0.9, p-value = 0.0001216
 ## alternative hypothesis: two-sided</code></pre>
 <pre><code>## 
 ##  Two-sample Kolmogorov-Smirnov test
 ## 
 ## data:  group_CD$ValueA and punif(1:6, 1, 6)
-## D^- = 1, p-value = 9.798e-05
+## D^- = 1, p-value = 6.233e-06
 ## alternative hypothesis: the CDF of x lies below that of y</code></pre>
 </div>
 <div id="the-number-of-doubles" class="section level2">
 <h2>The number of doubles</h2>
 <p>Each participant (“dyad”) is a single observation: the number of reported doubles<br />
-Wilcoxon signed-rank U test, separately for each condition Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6) Separately for each condition (We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)</p>
+Wilcoxon signed-rank U test, separately for each condition<br />
+Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)<br />
+Separately for each condition<br />
+(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)</p>
 <pre><code>## 
-##  Wilcoxon rank sum test
+##  Wilcoxon rank sum test with continuity correction
 ## 
 ## data:  participants_group_SH$Nbof_doubles and 3.33
-## W = 1, p-value = 0.6667
+## W = 116, p-value = 0.5632
 ## alternative hypothesis: true location shift is greater than 0</code></pre>
 <pre><code>## 
-##  Wilcoxon rank sum test
+##  Wilcoxon rank sum test with continuity correction
 ## 
-## data:  participants_group_SH$Nbof_doubles and 3.33
-## W = 1, p-value = 0.6667
+## data:  participants_group_SD$Nbof_doubles and 3.33
+## W = 111, p-value = 0.6038
 ## alternative hypothesis: true location shift is greater than 0</code></pre>
 <pre><code>## 
-##  Wilcoxon rank sum test
+##  Wilcoxon rank sum test with continuity correction
 ## 
-## data:  participants_group_SH$Nbof_doubles and 3.33
-## W = 1, p-value = 0.6667
+## data:  participants_group_CH$Nbof_doubles and 3.33
+## W = 98, p-value = 0.6197
 ## alternative hypothesis: true location shift is greater than 0</code></pre>
 <pre><code>## 
-##  Wilcoxon rank sum test
+##  Wilcoxon rank sum test with continuity correction
 ## 
-## data:  participants_group_SH$Nbof_doubles and 3.33
-## W = 1, p-value = 0.6667
+## data:  participants_group_CD$Nbof_doubles and 3.33
+## W = 103, p-value = 0.6242
 ## alternative hypothesis: true location shift is greater than 0</code></pre>
 </div>
 <div id="compare-the-number-of-doubles-in-pairs-of-conditions" class="section level2">
 <h2>Compare the number of doubles in pairs of conditions</h2>
-<p>Mann-Whitney U test</p>
+<p>Mann-Whitney U test (or two-sample Wilcoxon test)<br />
+One-sided? <em>Nem néztem utána, hogy alternative=“less”-t, vagy “greater”-t kéne beírni. Mi azt várjuk, hogy az y&gt;x)</em></p>
+<p>The effect of dishonest partners vs honest partners in simple game and in the charity game:</p>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  participants_group_SH$Nbof_doubles and participants_group_SD$Nbof_doubles
+## W = 34448, p-value = 0.806
+## alternative hypothesis: true location shift is less than 0
+## 95 percent confidence interval:
+##          -Inf 3.923126e-05
+## sample estimates:
+## difference in location 
+##           4.530026e-05</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  participants_group_CH$Nbof_doubles and participants_group_CD$Nbof_doubles
+## W = 29330, p-value = 0.9114
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<p>The effect of charity vs no charity with honest partners and with dishonest partners:</p>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  participants_group_SH$Nbof_doubles and participants_group_CH$Nbof_doubles
+## W = 31404, p-value = 0.3523
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  participants_group_SD$Nbof_doubles and participants_group_CD$Nbof_doubles
+## W = 32463, p-value = 0.9822
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
 </div>
 <div id="effect-size" class="section level2">
 <h2>Effect size</h2>
-<p>To estimate the effect size of the honest-dishonest treatment let’s compare the choices of participant Bs, who were paired with an honest A vs. a cheating A Data: from the supplementary material of Weisel&amp;Shalvy, 2015 and from Wouda et al., 2015</p>
+<p>To estimate the effect size of the honest-dishonest treatment let’s compare the choices of participant Bs, who were paired with an honest A vs. a cheating A<br />
+Data: from the supplementary material of Weisel&amp;Shalvy, 2015 and from Wouda et al., 2015</p>
 </div>
 <div id="linear-regression-to-test-the-effect-of-predictors" class="section level2">
 <h2>Linear regression to test the effect of predictors</h2>
