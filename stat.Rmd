@@ -117,6 +117,25 @@ One plot per participant. Plots from the same condition should be compiled into 
 
 ```{r}
 
+
+
+person <- as.factor(unique(rawdata$ID)) 
+person <- person[1:5] #to try the figure ww will print only the first five subjects' reports. 
+
+
+for(i in person){
+
+  figure1 <- ggplot(data=filter(rawdata, ID==i), aes(x=Index))+
+    geom_point(aes(y=ValueA), shape=1, size=5)+
+    geom_point(aes( y=ValueB), shape=3, size=2)+
+    theme_classic()+
+  scale_x_continuous(name="Period")+
+  scale_y_continuous(name="Report")
+  
+  cat("  \n### subject's ID:",  paste(i), "  \n")  
+  print(figure1)
+  cat("  \n")
+}
 ```
 
 ## Heat map to demonstrate the distribution of reported numbers 
