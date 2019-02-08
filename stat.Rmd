@@ -132,7 +132,7 @@ for(i in person){
   scale_x_continuous(name="Period")+
   scale_y_continuous(name="Report")
   
-  cat("  \n### subject's ID:",  paste(i), "  \n")  
+  cat(" subject's ID:",  paste(i), "  \n")  
   print(figure1)
   cat("  \n")
 }
@@ -143,6 +143,24 @@ Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle shoul
 One figure per condition.  
 
 ```{r}
+cond <- as.factor(unique(rawdata$Condition))
+
+for(i in cond){
+  heatmap_df <- data.frame(count(filter(rawdata, Condition==i), ValueA, ValueB))
+  
+  figure2 <- ggplot(data=heatmap_df, aes(x=ValueA, y=ValueB))+
+    geom_tile(aes(fill=n))+
+    theme_classic()+
+    scale_x_continuous(breaks=c(1:6))+
+    scale_y_continuous(breaks=c(1:6))+
+    scale_fill_gradient(low = "white", high = "black")
+  
+  cat("  \n Condition:",  paste(i), "  \n")  
+  print(figure2)
+  cat("  \n")
+}
+
+
 
 ```
 
@@ -151,6 +169,30 @@ One box for each condition on the same figure
 (Mean reports: does not make sense in our case, because player A is simulated)  
 
 ```{r}
+person <- as.factor(unique(rawdata$ID)) 
+cond <- as.factor(unique(rawdata$Condition))
+
+a <- c()
+for(j in cond){
+  for(i in person){
+    a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
+    a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
+    rownames(a.df) <- NULL
+    
+    
+    figure3 <- ggplot(data=a.df, aes(y=a))+
+      geom_boxplot()+
+      theme_minimal()+
+      scale_y_continuous(name='number of doubles per 20 rounds')+
+      scale_x_continuous(breaks=c())
+    
+  cat("  \n Condition:",  paste(j), "  \n")  
+  print(figure3)
+  cat("  \n")
+    
+  }
+  
+}
 
 ```
 
