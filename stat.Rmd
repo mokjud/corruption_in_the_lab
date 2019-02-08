@@ -203,13 +203,13 @@ Mann-Whitney U test (or two-sample Wilcoxon test)
 One-sided?  
 _Nem néztem utána, hogy alternative="less"-t, vagy "greater"-t kéne beírni. Mi azt várjuk, hogy az y>x)_
 
-The effect of dishonest partners vs honest partners in simple game and in the charity game:
+The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles)
 ```
 
-The effect of charity vs no charity with honest partners and with dishonest partners:
+The effect of charity vs no charity with honest partner and with dishonest partner:
 ```{r}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles)
 wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
@@ -218,6 +218,7 @@ wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubl
 ## Effect size
 To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A  
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
+https://www.statmethods.net/stats/power.html
 
 ```{r}
 
