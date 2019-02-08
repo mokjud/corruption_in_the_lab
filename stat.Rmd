@@ -217,6 +217,8 @@ groups <- summarize(group_by(participants, Condition),
                     Avg_avg_report = mean(Avg_report))
 
 print(groups)
+print(participants)
+
 ```
 
 ## Distribution of reported numbers 
@@ -224,29 +226,32 @@ Kolmogorov-Smirnov, one per condition.
 Expected if they don't cheat: uniform distribution 1:6  
 Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
 _NEM LENNE JOBB EGY CHI2? DISZKR?T V?LTOZ?, KEV?S (6) ?RT?KKEL. A KS TESZT FOLYAMATOS V?LTOZ?KRA VAN!_  
-_Bocs, l?tom, hogy rosszul haszn?lom a ks.test-et! Ha te ismered a f?ggv?nyt, jav?tsd ki, l?gyszi!_  
 
 ```{r Kolmogorov-Smirnov test}
+
 group_SH <- filter(rawdata, Condition == "SH")
 group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
 group_CD <- filter(rawdata, Condition == "CD")
 
-ks.test(group_SH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
-ks.test(group_SD$ValueB, punif(1:6, 1, 6), alternative = "less")
-ks.test(group_CH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
-ks.test(group_CD$ValueB, punif(1:6, 1, 6), alternative = "less")
+x <- ecdf(group_SH$ValueB)
+plot(x)
+
+#honestvalues <- rep(1:6, 10000)
+honestvalues <- ecdf(1:5)
+
+ks.test(group_SH$ValueB, honestvalues, alternative = "two.sided")
+ks.test(group_SD$ValueB, honestvalues, alternative = "two.sided")
+ks.test(group_CH$ValueB, honestvalues, alternative = "two.sided")
+ks.test(group_CD$ValueB, honestvalues, alternative = "two.sided")
+
+#s.test(group_CD$ValueB, honestvalues, alternative = "less", simulate=TRUE, B=10000)
+
+# qqplot (ANNA)
+# chi-square (JUDIT)
+# ks.test: ugy, ahogy ok csinaltak - BIZTOSAN IGY CSINALTAK?
+
 ```
-
-KS for valueA just for fun
-
-```{r fun}
-ks.test(group_SH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
-ks.test(group_SD$ValueA, punif(1:6, 1, 6), alternative = "less")
-ks.test(group_CH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
-ks.test(group_CD$ValueA, punif(1:6, 1, 6), alternative = "less")
-```
-
 ## The number of doubles
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition  
@@ -272,6 +277,7 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 Mann-Whitney U test (or two-sample Wilcoxon test)  
 One-sided?  
 _Nem n?ztem ut?na, hogy alternative="less"-t, vagy "greater"-t k?ne be?rni. Mi azt v?rjuk, hogy az y>x)_
+_AZ ELSO LESS/GRETAER, MINT A MASODIK; LEGYEN MIND ONE-SIDED_
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
@@ -285,7 +291,7 @@ wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubl
 wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
 ```
 
-## Effect size
+## Effect size (ANNA)
 To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A  
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
 https://www.statmethods.net/stats/power.html
@@ -294,7 +300,7 @@ https://www.statmethods.net/stats/power.html
 
 ```
 
-## Linear regression to test the effect of predictors
+## Linear regression to test the effect of predictors (JUDIT)
 Dependent variable: number of reported doubles (interval)  
 Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)  
 
