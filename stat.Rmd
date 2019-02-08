@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
 library(rmarkdown)
@@ -55,7 +56,7 @@ Data frame column names (each row is a dice roll):
 
 ```{r Generate dummy data}
 
-N = 10 # number of participants in the dummy data
+N = 20 # number of participants in the dummy data
 
 IDs <- sample(10000:99999, N)
 games <- sample(c("S", "C"), N, replace=TRUE)
@@ -113,7 +114,6 @@ rawdata$Double <- doubles
 
 ```
 
-
 # Figures
 
 ## Scatter plots of individual behavior
@@ -123,8 +123,7 @@ One plot per participant. Plots from the same condition should be compiled into 
 ```{r Scatter plots}
 
 person <- as.factor(unique(rawdata$ID)) 
-person <- person[1:5] #to try the figure ww will print only the first five subjects' reports. 
-
+person <- person[1] #to try the figure ww will print only the first five subjects' reports. 
 
 for(i in person){
 
@@ -247,18 +246,24 @@ group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
 group_CD <- filter(rawdata, Condition == "CD")
 
-#honestvalues <- rep(1:6, 10000)
-honestvalues <- ecdf(1:5)
+honestvalues <- rep(1:6, 10000)
+honestvalues_cdf <- ecdf(1:5)
 
-ks.test(group_SH$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_SD$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_CH$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_CD$ValueB, honestvalues, alternative = "two.sided")
+ks.test(group_SH$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_SD$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_CH$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_CD$ValueB, honestvalues_cdf, alternative = "two.sided")
 
 ```
 We also made qqplots:
+_HOW TO MAKE THE PLOTS SQUARE?_
 
 ```{r qqplots ANNA}
+
+qqplot(group_SH$ValueB, honestvalues)
+qqplot(group_SD$ValueB, honestvalues)
+qqplot(group_CH$ValueB, honestvalues)
+qqplot(group_CD$ValueB, honestvalues)
 
 ```
 
@@ -284,7 +289,7 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
-Mann-Whitney U test (or two-sample Wilcoxon test), one-sided  
+Mann-Whitney U test (or two-sample Wilcoxon test), one-sided.  
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
