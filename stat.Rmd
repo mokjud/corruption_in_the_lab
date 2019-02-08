@@ -53,9 +53,9 @@ Data frame column names (each row is a dice roll):
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
 * Saliva: ??? (normal distribution, mean=3, sd=1)
 
-```{r generate dummy data}
+```{r Generate dummy data}
 
-N = 1000 # number of participants in the dummy data
+N = 10 # number of participants in the dummy data
 
 IDs <- sample(10000:99999, N)
 games <- sample(c("S", "C"), N, replace=TRUE)
@@ -109,13 +109,18 @@ rawdata$Double <- doubles
 + Delete excess rounds for each participant
 * Check if there is any missing data (columns)
 
+```{r Data checking}
+
+```
+
+
 # Figures
 
 ## Scatter plots of individual behavior
 These should be based on Weisel & Shalvi, 2015, Fig. S10.  
 One plot per participant. Plots from the same condition should be compiled into one composite figure.  
 
-```{r}
+```{r Scatter plots}
 
 
 
@@ -142,7 +147,7 @@ for(i in person){
 Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle should be color coded according the number of observations within them.  
 One figure per condition.  
 
-```{r}
+```{r Heat maps}
 cond <- as.factor(unique(rawdata$Condition))
 
 for(i in cond){
@@ -168,7 +173,7 @@ for(i in cond){
 One box for each condition on the same figure  
 (Mean reports: does not make sense in our case, because player A is simulated)  
 
-```{r}
+```{r Box plots}
 person <- as.factor(unique(rawdata$ID)) 
 cond <- as.factor(unique(rawdata$Condition))
 
@@ -199,7 +204,7 @@ for(j in cond){
 # Statistics
 
 ## Summary of data
-```{r}
+```{r Generate useful variables from raw data}
 participants <- summarize(group_by(rawdata, ID), 
                           Condition = unique(Condition), 
                           Nbof_doubles = sum(Double), 
@@ -221,7 +226,7 @@ Two-sided for conditions with honest partner, one-sided for conditions with dish
 _NEM LENNE JOBB EGY CHI2? DISZKR?T V?LTOZ?, KEV?S (6) ?RT?KKEL. A KS TESZT FOLYAMATOS V?LTOZ?KRA VAN!_  
 _Bocs, l?tom, hogy rosszul haszn?lom a ks.test-et! Ha te ismered a f?ggv?nyt, jav?tsd ki, l?gyszi!_  
 
-```{r}
+```{r Kolmogorov-Smirnov test}
 group_SH <- filter(rawdata, Condition == "SH")
 group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
@@ -231,13 +236,15 @@ ks.test(group_SH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
 ks.test(group_SD$ValueB, punif(1:6, 1, 6), alternative = "less")
 ks.test(group_CH$ValueB, punif(1:6, 1, 6), alternative = "two.sided")
 ks.test(group_CD$ValueB, punif(1:6, 1, 6), alternative = "less")
+```
 
-# just for fun
+KS for valueA just for fun
+
+```{r fun}
 ks.test(group_SH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
 ks.test(group_SD$ValueA, punif(1:6, 1, 6), alternative = "less")
 ks.test(group_CH$ValueA, punif(1:6, 1, 6), alternative = "two.sided")
 ks.test(group_CD$ValueA, punif(1:6, 1, 6), alternative = "less")
-
 ```
 
 ## The number of doubles
@@ -246,7 +253,8 @@ Wilcoxon signed-rank U test, separately for each condition
 Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)  
 (We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)  
 
-```{r}
+```{r Wilcoxon signed-rank U test}
+
 participants_group_SH <- filter(participants, Condition == "SH")
 wilcox.test(participants_group_SH$Nbof_doubles, 3.33, alternative = "g") #small sample size
 
@@ -266,13 +274,13 @@ One-sided?
 _Nem n?ztem ut?na, hogy alternative="less"-t, vagy "greater"-t k?ne be?rni. Mi azt v?rjuk, hogy az y>x)_
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
-```{r}
+```{r Mann-Whitney U test 1}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles)
 ```
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
-```{r}
+```{r Mann-Whitney U test 2}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles)
 wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
 ```
