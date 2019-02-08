@@ -122,8 +122,6 @@ One plot per participant. Plots from the same condition should be compiled into 
 
 ```{r Scatter plots}
 
-
-
 person <- as.factor(unique(rawdata$ID)) 
 person <- person[1:5] #to try the figure ww will print only the first five subjects' reports. 
 
@@ -148,6 +146,7 @@ Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle shoul
 One figure per condition.  
 
 ```{r Heat maps}
+
 cond <- as.factor(unique(rawdata$Condition))
 
 for(i in cond){
@@ -165,8 +164,6 @@ for(i in cond){
   cat("  \n")
 }
 
-
-
 ```
 
 ## Box plots of the mean number of doubles
@@ -174,37 +171,40 @@ One box for each condition on the same figure
 (Mean reports: does not make sense in our case, because player A is simulated)  
 
 ```{r Box plots}
+
 person <- as.factor(unique(rawdata$ID)) 
 cond <- as.factor(unique(rawdata$Condition))
 
-a <- c()
-for(j in cond){
-  for(i in person){
-    a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
-    a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
-    rownames(a.df) <- NULL
-    
-    
-    figure3 <- ggplot(data=a.df, aes(y=a))+
-      geom_boxplot()+
-      theme_minimal()+
-      scale_y_continuous(name='number of doubles per 20 rounds')+
-      scale_x_continuous(breaks=c())
-    
-  cat("  \n Condition:",  paste(j), "  \n")  
-  print(figure3)
-  cat("  \n")
-    
-  }
-  
-}
+# a <- c()
+# for(j in cond){
+#   for(i in person){
+#     a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
+#     a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
+#     rownames(a.df) <- NULL
+#     
+#     
+#     figure3 <- ggplot(data=a.df, aes(y=a))+
+#       geom_boxplot()+
+#       theme_minimal()+
+#       scale_y_continuous(name='number of doubles per 20 rounds')+
+#       scale_x_continuous(breaks=c())
+#     
+#   cat("  \n Condition:",  paste(j), "  \n")  
+#   print(figure3)
+#   cat("  \n")
+#     
+#   }
+#   
+# }
 
 ```
 
 # Statistics
 
 ## Summary of data
+
 ```{r Generate useful variables from raw data}
+
 participants <- summarize(group_by(rawdata, ID), 
                           Condition = unique(Condition), 
                           Nbof_doubles = sum(Double), 
@@ -217,15 +217,28 @@ groups <- summarize(group_by(participants, Condition),
                     Avg_avg_report = mean(Avg_report))
 
 print(groups)
-print(participants)
+print(head(participants))
 
 ```
 
 ## Distribution of reported numbers 
-Kolmogorov-Smirnov, one per condition.  
-Expected if they don't cheat: uniform distribution 1:6  
-Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-_NEM LENNE JOBB EGY CHI2? DISZKR?T V?LTOZ?, KEV?S (6) ?RT?KKEL. A KS TESZT FOLYAMATOS V?LTOZ?KRA VAN!_  
+
+Our null hípothesis was that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
+
+This would lead to skewed distributions when the participant playes with a dishonest simulated partner, who reports higher numbers with higher probability. In case of a honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this create a significant difference).
+
+We used chi-square tests to test whether the reported values come from a uniform distribution, separately for each group.
+
+```{r chi-square JUDIT}
+
+
+```
+
+We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition:
+
+* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
+* Or two-sided everywhere, because we think this is what others did
+* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
 
 ```{r Kolmogorov-Smirnov test}
 
@@ -233,9 +246,6 @@ group_SH <- filter(rawdata, Condition == "SH")
 group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
 group_CD <- filter(rawdata, Condition == "CD")
-
-x <- ecdf(group_SH$ValueB)
-plot(x)
 
 #honestvalues <- rep(1:6, 10000)
 honestvalues <- ecdf(1:5)
@@ -245,13 +255,13 @@ ks.test(group_SD$ValueB, honestvalues, alternative = "two.sided")
 ks.test(group_CH$ValueB, honestvalues, alternative = "two.sided")
 ks.test(group_CD$ValueB, honestvalues, alternative = "two.sided")
 
-#s.test(group_CD$ValueB, honestvalues, alternative = "less", simulate=TRUE, B=10000)
+```
+We also made qqplots:
 
-# qqplot (ANNA)
-# chi-square (JUDIT)
-# ks.test: ugy, ahogy ok csinaltak - BIZTOSAN IGY CSINALTAK?
+```{r qqplots ANNA}
 
 ```
+
 ## The number of doubles
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition  
@@ -274,21 +284,18 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
-Mann-Whitney U test (or two-sample Wilcoxon test)  
-One-sided?  
-_Nem n?ztem ut?na, hogy alternative="less"-t, vagy "greater"-t k?ne be?rni. Mi azt v?rjuk, hogy az y>x)_
-_AZ ELSO LESS/GRETAER, MINT A MASODIK; LEGYEN MIND ONE-SIDED_
+Mann-Whitney U test (or two-sample Wilcoxon test), one-sided  
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
-wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles)
+wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
 ```{r Mann-Whitney U test 2}
-wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles)
-wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
+wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles, conf.int = TRUE, alternative = "less")
+wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 ## Effect size (ANNA)
