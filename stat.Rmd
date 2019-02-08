@@ -10,6 +10,7 @@ rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
 library(rmarkdown)
 library(dplyr)
+library(ggplot2)
 ```
 # Description of the experiment
     
@@ -116,6 +117,25 @@ One plot per participant. Plots from the same condition should be compiled into 
 
 ```{r}
 
+
+
+person <- as.factor(unique(rawdata$ID)) 
+person <- person[1:5] #to try the figure ww will print only the first five subjects' reports. 
+
+
+for(i in person){
+
+  figure1 <- ggplot(data=filter(rawdata, ID==i), aes(x=Index))+
+    geom_point(aes(y=ValueA), shape=1, size=5)+
+    geom_point(aes( y=ValueB), shape=3, size=2)+
+    theme_classic()+
+  scale_x_continuous(name="Period")+
+  scale_y_continuous(name="Report")
+  
+  cat(" subject's ID:",  paste(i), "  \n")  
+  print(figure1)
+  cat("  \n")
+}
 ```
 
 ## Heat map to demonstrate the distribution of reported numbers 
@@ -123,6 +143,24 @@ Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle shoul
 One figure per condition.  
 
 ```{r}
+cond <- as.factor(unique(rawdata$Condition))
+
+for(i in cond){
+  heatmap_df <- data.frame(count(filter(rawdata, Condition==i), ValueA, ValueB))
+  
+  figure2 <- ggplot(data=heatmap_df, aes(x=ValueA, y=ValueB))+
+    geom_tile(aes(fill=n))+
+    theme_classic()+
+    scale_x_continuous(breaks=c(1:6))+
+    scale_y_continuous(breaks=c(1:6))+
+    scale_fill_gradient(low = "white", high = "black")
+  
+  cat("  \n Condition:",  paste(i), "  \n")  
+  print(figure2)
+  cat("  \n")
+}
+
+
 
 ```
 
@@ -131,6 +169,30 @@ One box for each condition on the same figure
 (Mean reports: does not make sense in our case, because player A is simulated)  
 
 ```{r}
+person <- as.factor(unique(rawdata$ID)) 
+cond <- as.factor(unique(rawdata$Condition))
+
+a <- c()
+for(j in cond){
+  for(i in person){
+    a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
+    a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
+    rownames(a.df) <- NULL
+    
+    
+    figure3 <- ggplot(data=a.df, aes(y=a))+
+      geom_boxplot()+
+      theme_minimal()+
+      scale_y_continuous(name='number of doubles per 20 rounds')+
+      scale_x_continuous(breaks=c())
+    
+  cat("  \n Condition:",  paste(j), "  \n")  
+  print(figure3)
+  cat("  \n")
+    
+  }
+  
+}
 
 ```
 
@@ -156,8 +218,8 @@ print(groups)
 Kolmogorov-Smirnov, one per condition.  
 Expected if they don't cheat: uniform distribution 1:6  
 Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-_NEM LENNE JOBB EGY CHI2? DISZKRÉT VÁLTOZÓ, KEVÉS (6) ÉRTÉKKEL. A KS TESZT FOLYAMATOS VÁLTOZÓKRA VAN!_  
-_Bocs, látom, hogy rosszul használom a ks.test-et! Ha te ismered a függvényt, javítsd ki, légyszi!_  
+_NEM LENNE JOBB EGY CHI2? DISZKR?T V?LTOZ?, KEV?S (6) ?RT?KKEL. A KS TESZT FOLYAMATOS V?LTOZ?KRA VAN!_  
+_Bocs, l?tom, hogy rosszul haszn?lom a ks.test-et! Ha te ismered a f?ggv?nyt, jav?tsd ki, l?gyszi!_  
 
 ```{r}
 group_SH <- filter(rawdata, Condition == "SH")
@@ -201,7 +263,7 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ## Compare the number of doubles in pairs of conditions
 Mann-Whitney U test (or two-sample Wilcoxon test)  
 One-sided?  
-_Nem néztem utána, hogy alternative="less"-t, vagy "greater"-t kéne beírni. Mi azt várjuk, hogy az y>x)_
+_Nem n?ztem ut?na, hogy alternative="less"-t, vagy "greater"-t k?ne be?rni. Mi azt v?rjuk, hogy az y>x)_
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r}
