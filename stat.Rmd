@@ -18,6 +18,7 @@ library(rmarkdown)
 library(dplyr)
 library(ggplot2)
 ```
+
 # Description of the experiment
     
 Sequential dyadic die-rolling task  
@@ -217,9 +218,9 @@ print(head(participants))
 
 ## Distribution of reported numbers 
 
-Our null hypothesis was that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
+Our null hypothesis is that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
 
-This would lead to skewed distributions when the participant playes with a dishonest simulated partner, who reports higher numbers with higher probability. In case of a honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
+This would lead to skewed distributions when the participant playes with a dishonest simulated partner who reports larger numbers with higher probability. In case of an honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
 
 We used chi-square tests to test whether the reported values come from a uniform distribution, separately for each group.
 
@@ -228,11 +229,9 @@ We used chi-square tests to test whether the reported values come from a uniform
 
 ```
 
-We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition:
-
-* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-* Or two-sided everywhere, because we think this is what others did
+We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition. We note, that Kolmogorov-Smirnov does not seem to be an appropriate test for this purpose, because this test is for continuous distributions. We used this test to make our results more comparable with...
 * _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
+* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
 
 ```{r Kolmogorov-Smirnov test}
 
@@ -241,24 +240,26 @@ group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
 group_CD <- filter(rawdata, Condition == "CD")
 
-honestvalues <- rep(1:6, 10000)
-honestvalues_cdf <- ecdf(1:5)
+fairdice_det <- rep(1:6, round(((N/4)*20)/6))
+fairdice_rand <- sample(1:6, (N/4)*20, replace=TRUE)
+fairdice_cdf <- ecdf(1:5)
 
-ks.test(group_SH$ValueB, honestvalues_cdf, alternative = "two.sided")
-ks.test(group_SD$ValueB, honestvalues_cdf, alternative = "two.sided")
-ks.test(group_CH$ValueB, honestvalues_cdf, alternative = "two.sided")
-ks.test(group_CD$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_SH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_SD$ValueB, fairdice_det, alternative = "greater")
+ks.test(group_CH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_CD$ValueB, fairdice_det, alternative = "greater")
 
 ```
+
 We also made qqplots:
-_HOW TO MAKE THE PLOTS SQUARE?_
 
 ```{r qqplots ANNA}
 
-qqplot(group_SH$ValueB, honestvalues)
-qqplot(group_SD$ValueB, honestvalues)
-qqplot(group_CH$ValueB, honestvalues)
-qqplot(group_CD$ValueB, honestvalues)
+par(pty="s") # square plotting region
+qqplot(1:6, group_SH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SH quantiles")
+qqplot(1:6, group_SD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SD quantiles")
+qqplot(1:6, group_CH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CH quantiles")
+qqplot(1:6, group_CD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CD quantiles")
 
 ```
 
@@ -270,17 +271,13 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 
 ```{r Wilcoxon signed-rank U test}
 
-participants_group_SH <- filter(participants, Condition == "SH")
-wilcox.test(participants_group_SH$Nbof_doubles, 3.33, alternative = "g") #small sample size
+for (i in groups$Condition) {
+  print(i)
+  current <- filter(participants, Condition == i)
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "g")
+  print(w)
+}
 
-participants_group_SD <- filter(participants, Condition == "SD")
-wilcox.test(participants_group_SD$Nbof_doubles, 3.33, alternative = "g")
-
-participants_group_CH <- filter(participants, Condition == "CH")
-wilcox.test(participants_group_CH$Nbof_doubles, 3.33, alternative = "g")
-
-participants_group_CD <- filter(participants, Condition == "CD")
-wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
@@ -299,7 +296,7 @@ wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubl
 ```
 
 ## Effect size (ANNA)
-To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A  
+To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A.  
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
 https://www.statmethods.net/stats/power.html
 
