@@ -2,12 +2,18 @@
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-output: html_document
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
+
 rm(list=ls())
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # global options
+N=10 # number of participants in the dummy data
+set.seed(1)
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
 library(dplyr)
 library(ggplot2)
@@ -15,7 +21,6 @@ library(ggplot2)
 # Description of the experiment
     
 Sequential dyadic die-rolling task  
-
 Two-by-two design:
     
 * Game: simple game or charity game
@@ -33,7 +38,7 @@ Each participant plays 20 rounds of the game. A round of game consists of the fo
 1. Participant learns the reported number of the supposed partner
 2. Participant throws a dice
 3. Participant reports the number 
-4. Both players get paid according to the reported numbers
+4. Both players get a score according to the reported numbers: the score is the reported value, if they reported a double; otherwise it's 0
 5. In the charity game a charity foundation gets a small amount of donation  
 
 # Dummy data
@@ -55,20 +60,13 @@ Data frame column names (each row is a dice roll):
 
 ```{r Generate dummy data}
 
-N = 10 # number of participants in the dummy data
-
 IDs <- sample(10000:99999, N)
 games <- sample(c("S", "C"), N, replace=TRUE)
 partners <- sample(c("H", "D"), N, replace=TRUE)
-
-conditions = vector("character", N)
-for (i in 1:N) {
-  conditions[i] <- paste(games[i], partners[i], sep = "")
-}
+conditions = paste(games, partners, sep="")
 
 A_honest <- sample(1:6, 20, replace=TRUE)
 A_dishonest <- sample(4:6, 20, replace=TRUE)
-
 
 ValueAs <- vector("integer", N*20)
 for (i in 1:N) {
@@ -79,40 +77,33 @@ for (i in 1:N) {
 fingerratios <- rnorm(N, mean = 1, sd = 0.1)
 salivas <- rnorm(N, mean = 3, sd = 1)
 
-rawdata <- data.frame("ID" = rep(IDs, times = 1, length.out = NA, each = 20), 
-                      "Game" = rep(games, times = 1, length.out = NA, each = 20), 
-                      "Partner" = rep(partners, times = 1, length.out = NA, each = 20), 
-                      "Condition" = rep(conditions, times = 1, length.out = NA, each = 20),
-                      "Index" = rep(1:20, N), 
-                      "ValueA" = ValueAs, 
-                      "ValueB" = sample(1:6, N*20, replace = TRUE), 
-                      "Double" = vector("integer", N*20),
-                      "Q1" = sample(letters, N*20, replace = TRUE), 
-                      "Q2" = sample(letters, N*20, replace = TRUE),
-                      "Fingerratio" = rep(fingerratios, times = 1, length.out = NA, each = 20),
-                      "Saliva" = rep(salivas, times = 1, length.out = NA, each = 20))
+rawdata <- data.frame(
+  ID = rep(IDs, times = 1, length.out = NA, each = 20), 
+  Game = rep(games, times = 1, length.out = NA, each = 20), 
+  Partner = rep(partners, times = 1, length.out = NA, each = 20), 
+  Condition = rep(conditions, times = 1, length.out = NA, each = 20),
+  Index = rep(1:20, N), 
+  ValueA = ValueAs, 
+  ValueB = sample(1:6, N*20, replace = TRUE), 
+  Double = vector("logical", N*20),
+  Q1 = sample(letters, N*20, replace = TRUE), 
+  Q2 = sample(letters, N*20, replace = TRUE),
+  Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
+  Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
 
-doubles <- vector("integer", N*20)
-for (i in 1:nrow(rawdata)){
-  if (rawdata$ValueA[i] == rawdata$ValueB[i]){
-      doubles[i] <- 1
-  }
-}
-
-rawdata$Double <- doubles
+rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
 
 ```
 # Data checking
 
-* Check if every participant had 20 rounds
-+ Delete participants who had less than 20 rounds
-+ Delete excess rounds for each participant
-* Check if there is any missing data (columns)
+* Check if every participant had 20 rounds  
+  + Delete participants who had less than 20 rounds  
+  + Delete excess rounds for each participant  
+* Check if there is any missing data (columns)  
 
 ```{r Data checking}
 
 ```
-
 
 # Figures
 
@@ -122,11 +113,7 @@ One plot per participant. Plots from the same condition should be compiled into 
 
 ```{r Scatter plots}
 
-
-
 person <- as.factor(unique(rawdata$ID)) 
-person <- person[1:5] #to try the figure ww will print only the first five subjects' reports. 
-
 
 for(i in person){
 
@@ -148,6 +135,7 @@ Like Weisel & Shalvi, 2015, Fig. 2, but instead of circles, each rectangle shoul
 One figure per condition.  
 
 ```{r Heat maps}
+
 cond <- as.factor(unique(rawdata$Condition))
 
 for(i in cond){
@@ -165,8 +153,6 @@ for(i in cond){
   cat("  \n")
 }
 
-
-
 ```
 
 ## Box plots of the mean number of doubles
@@ -174,58 +160,79 @@ One box for each condition on the same figure
 (Mean reports: does not make sense in our case, because player A is simulated)  
 
 ```{r Box plots}
+
 person <- as.factor(unique(rawdata$ID)) 
 cond <- as.factor(unique(rawdata$Condition))
 
-a <- c()
-for(j in cond){
-  for(i in person){
-    a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
-    a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
-    rownames(a.df) <- NULL
-    
-    
-    figure3 <- ggplot(data=a.df, aes(y=a))+
-      geom_boxplot()+
-      theme_minimal()+
-      scale_y_continuous(name='number of doubles per 20 rounds')+
-      scale_x_continuous(breaks=c())
-    
-  cat("  \n Condition:",  paste(j), "  \n")  
-  print(figure3)
-  cat("  \n")
-    
-  }
-  
-}
+# a <- c()
+# for(j in cond){
+#   for(i in person){
+#     a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
+#     a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
+#     rownames(a.df) <- NULL
+#     
+#     
+#     figure3 <- ggplot(data=a.df, aes(y=a))+
+#       geom_boxplot()+
+#       theme_minimal()+
+#       scale_y_continuous(name='number of doubles per 20 rounds')+
+#       scale_x_continuous(breaks=c())
+#     
+#   cat("  \n Condition:",  paste(j), "  \n")  
+#   print(figure3)
+#   cat("  \n")
+#     
+#   }
+#   
+# }
 
 ```
 
 # Statistics
 
 ## Summary of data
-```{r Generate useful variables from raw data}
-participants <- summarize(group_by(rawdata, ID), 
-                          Condition = unique(Condition), 
-                          Nbof_doubles = sum(Double), 
-                          Avg_report = mean(ValueB))
 
-groups <- summarize(group_by(participants, Condition),
-                    Nbof_participants = n_distinct(ID),
-                    Nbof_doubles = sum(Nbof_doubles),
-                    Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
-                    Avg_avg_report = mean(Avg_report))
+Summary of groups and participants:
+```{r Create useful variables from raw data}
+
+participants <- rawdata %>%
+  group_by(ID) %>%
+  summarize(
+    Condition = unique(Condition), 
+    Nbof_doubles = sum(Double), 
+    Avg_report = mean(ValueB))
+
+groups <- participants %>%
+  group_by(Condition) %>%
+  summarize(
+    Nbof_participants = n_distinct(ID),
+    Nbof_doubles = sum(Nbof_doubles),
+    Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
+    Avg_avg_report = mean(Avg_report))
 
 print(groups)
-print(participants)
+print(head(participants))
 
 ```
 
 ## Distribution of reported numbers 
-Kolmogorov-Smirnov, one per condition.  
-Expected if they don't cheat: uniform distribution 1:6  
-Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-_NEM LENNE JOBB EGY CHI2? DISZKR?T V?LTOZ?, KEV?S (6) ?RT?KKEL. A KS TESZT FOLYAMATOS V?LTOZ?KRA VAN!_  
+
+Our null hypothesis was that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
+
+This would lead to skewed distributions when the participant playes with a dishonest simulated partner, who reports higher numbers with higher probability. In case of a honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
+
+We used chi-square tests to test whether the reported values come from a uniform distribution, separately for each group.
+
+```{r chi-square JUDIT}
+
+
+```
+
+We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition:
+
+* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
+* Or two-sided everywhere, because we think this is what others did
+* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
 
 ```{r Kolmogorov-Smirnov test}
 
@@ -234,24 +241,27 @@ group_SD <- filter(rawdata, Condition == "SD")
 group_CH <- filter(rawdata, Condition == "CH")
 group_CD <- filter(rawdata, Condition == "CD")
 
-x <- ecdf(group_SH$ValueB)
-plot(x)
+honestvalues <- rep(1:6, 10000)
+honestvalues_cdf <- ecdf(1:5)
 
-#honestvalues <- rep(1:6, 10000)
-honestvalues <- ecdf(1:5)
-
-ks.test(group_SH$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_SD$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_CH$ValueB, honestvalues, alternative = "two.sided")
-ks.test(group_CD$ValueB, honestvalues, alternative = "two.sided")
-
-#s.test(group_CD$ValueB, honestvalues, alternative = "less", simulate=TRUE, B=10000)
-
-# qqplot (ANNA)
-# chi-square (JUDIT)
-# ks.test: ugy, ahogy ok csinaltak - BIZTOSAN IGY CSINALTAK?
+ks.test(group_SH$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_SD$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_CH$ValueB, honestvalues_cdf, alternative = "two.sided")
+ks.test(group_CD$ValueB, honestvalues_cdf, alternative = "two.sided")
 
 ```
+We also made qqplots:
+_HOW TO MAKE THE PLOTS SQUARE?_
+
+```{r qqplots ANNA}
+
+qqplot(group_SH$ValueB, honestvalues)
+qqplot(group_SD$ValueB, honestvalues)
+qqplot(group_CH$ValueB, honestvalues)
+qqplot(group_CD$ValueB, honestvalues)
+
+```
+
 ## The number of doubles
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition  
@@ -274,21 +284,18 @@ wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
-Mann-Whitney U test (or two-sample Wilcoxon test)  
-One-sided?  
-_Nem n?ztem ut?na, hogy alternative="less"-t, vagy "greater"-t k?ne be?rni. Mi azt v?rjuk, hogy az y>x)_
-_AZ ELSO LESS/GRETAER, MINT A MASODIK; LEGYEN MIND ONE-SIDED_
+Mann-Whitney U test (or two-sample Wilcoxon test), one-sided.  
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
 wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
-wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles)
+wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
 ```{r Mann-Whitney U test 2}
-wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles)
-wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles)
+wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles, conf.int = TRUE, alternative = "less")
+wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 ## Effect size (ANNA)
