@@ -19,6 +19,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 ```
+
 # Description of the experiment
     
 Sequential dyadic die-rolling task  
@@ -216,9 +217,9 @@ kable(head(participants))
 
 ## Distribution of reported numbers 
 
-Our null hypothesis was that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
+Our null hypothesis is that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
 
-This would lead to skewed distributions when the participant playes with a dishonest simulated partner, who reports higher numbers with higher probability. In case of a honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
+This would lead to skewed distributions when the participant playes with a dishonest simulated partner who reports larger numbers with higher probability. In case of an honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
 
 We used chi-square goodness of fit tests to test whether the reported values come from a uniform distribution, separately for each condition.
 
@@ -243,30 +244,7 @@ for(i in cond)
 kable(df.results, digits=2)
 
 ```
-
-We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition:
-
-* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-* Or two-sided everywhere, because we think this is what others did
-* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
-
-```{r Kolmogorov-Smirnov test}
-honestvalues <- rep(1:6, 10000)
-honestvalues_cdf <- ecdf(1:5)
-
-df.results <- data.frame(condition=cond, D=NA, p_value=NA)
-for(i in cond)
-{
-  group_data <- filter(rawdata, Condition == i)
-  result <- ks.test(group_data$ValueB, honestvalues_cdf, alternative = "two.sided")
-  #cat("  \n Condition:",  paste(i), "  \n") 
-  #print(result)
-  df.results[which(df.results$condition==i), ]$D <- result$statistic
-  df.results[which(df.results$condition==i), ]$p_value <- result$p.value
-  
-}
-kable( df.results, digits=2)
-```
+We decided not to use Kolmogorov-Smirnov, despite that it has been used previously by others (Gachter, Schulz, 2016). The large number of ties in our sample makes this test unreliable.
   
 We also made qqplots:  
 _HOW TO MAKE THE PLOTS SQUARE?_
@@ -284,28 +262,27 @@ for(i in cond)
   #print(figure_qqplot)
 }
 
-
 ```
 
 ## The number of doubles
+Ultimately, participants must report doubles, thus match their reported values to that of player A, in order to increase their payoff. The chi-square test cannot detect cheating in those groups where player A is "honest", even if player B cheats on each and every round, because the distribution of reported values would still come from a uniform distribution. Testing the mean of the reported numbers against an expected value of 3.5 does not make sense for the same reasons.
+Therefore, we also tested, whether the number of doubles is higher than its expected value of 3.33 (the probability of throwing a double is 1/6; the expected number of doubles in 20 rounds is 20*1/6 = 3.33 in case of a fair dice and honest player).
+
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition  
 Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)  
-(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)  
 
 ```{r Wilcoxon signed-rank U test}
 
-participants_group_SH <- filter(participants, Condition == "SH")
-wilcox.test(participants_group_SH$Nbof_doubles, 3.33, alternative = "g") #small sample size
+for (i in groups$Condition) {
+  print(i)
+  current <- filter(participants, Condition == i)
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
+  print(w)
+}
 
-participants_group_SD <- filter(participants, Condition == "SD")
-wilcox.test(participants_group_SD$Nbof_doubles, 3.33, alternative = "g")
 
-participants_group_CH <- filter(participants, Condition == "CH")
-wilcox.test(participants_group_CH$Nbof_doubles, 3.33, alternative = "g")
 
-participants_group_CD <- filter(participants, Condition == "CD")
-wilcox.test(participants_group_CD$Nbof_doubles, 3.33, alternative = "g")
 ```
 
 ## Compare the number of doubles in pairs of conditions
@@ -324,11 +301,20 @@ The effect of charity vs no charity with honest partner and with dishonest partn
 ```
 
 ## Effect size (ANNA)
-To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A  
+To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A.  
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
-https://www.statmethods.net/stats/power.html
+The number of doubles in each condition against the hypothetical expected value: Wilcoxon signed-rank U test
+expected value = 3.33
+maximum value when cheating = 20
+
+Compare the number of doubles in pairs of conditions: Wilcoxon signed-rank U test 
+
+
+Monte Carlo method
+One can simulate the distribution you think the two samples come from many thousands of times using Monte Carlo methods. The percentage of those samples the Wilcoxon test correctly identifies as "different" is the power of the test. For example, if you generated 10,000 different simulated paired samples that match your actual data in terms of size and the distribution they came from, and 8,000 of them are correctly identified by the test as different, your power = 0.80.
 
 ```{r}
+
 
 ```
 
