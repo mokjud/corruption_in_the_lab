@@ -2,13 +2,13 @@
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-output: pdf_document
+#output: pdf_document
+utput: word_document
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-
 rm(list=ls())
 N=10 # number of participants in the dummy data
 set.seed(1)
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
 library(dplyr)
 library(ggplot2)
-library(pwr)
+library(knitr)
 ```
 
 # Description of the experiment
@@ -104,7 +104,6 @@ rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
 * Check if there is any missing data (columns)  
 
 ```{r Data checking}
-
 ```
 
 # Figures
@@ -118,17 +117,22 @@ One plot per participant. Plots from the same condition should be compiled into 
 person <- as.factor(unique(rawdata$ID)) 
 
 for(i in person){
+  #yourfilename=paste("figure1_", i, ".jpg",sep="") #filename for sacing
+  #jpeg(file=yourfilename)
 
   figure1 <- ggplot(data=filter(rawdata, ID==i), aes(x=Index))+
     geom_point(aes(y=ValueA), shape=1, size=5)+
     geom_point(aes( y=ValueB), shape=3, size=2)+
     theme_classic()+
-  scale_x_continuous(name="Period")+
-  scale_y_continuous(name="Report")
+    scale_x_continuous(name="Period")+
+    scale_y_continuous(name="Report")+
+    ggtitle(paste("subject's ID:", i ))
   
   cat(" subject's ID:",  paste(i), "  \n")  
   print(figure1)
+  #dev.off() 
   cat("  \n")
+
 }
 ```
 
@@ -139,19 +143,24 @@ One figure per condition.
 ```{r Heat maps}
 
 cond <- as.factor(unique(rawdata$Condition))
+maximum <- max(count(rawdata, ValueA, ValueB, Condition)$n)
 
 for(i in cond){
   heatmap_df <- data.frame(count(filter(rawdata, Condition==i), ValueA, ValueB))
   
-  figure2 <- ggplot(data=heatmap_df, aes(x=ValueA, y=ValueB))+
-    geom_tile(aes(fill=n))+
-    theme_classic()+
-    scale_x_continuous(breaks=c(1:6))+
-    scale_y_continuous(breaks=c(1:6))+
-    scale_fill_gradient(low = "white", high = "black")
+  #yourfilename=paste("figure2_", i, ".jpg",sep="") #filename for sacing
+  #jpeg(file=yourfilename)
   
+  figure2 <- ggplot(data=heatmap_df, aes(x=ValueA, y=ValueB))+
+      geom_tile(aes(fill=n))+
+      theme_classic()+
+      scale_x_continuous(breaks=c(1:6), limits=c(0,7))+
+      scale_y_continuous(breaks=c(1:6), limits=c(0,7))+
+      scale_fill_gradient(low = "#F0F0F0", high = "black", na.value="white", limits=c(1, maximum), breaks=c(1:maximum), labels=c(1:maximum))+
+      ggtitle(paste("condition", i ))
   cat("  \n Condition:",  paste(i), "  \n")  
   print(figure2)
+  #dev.off()
   cat("  \n")
 }
 
@@ -163,30 +172,19 @@ One box for each condition on the same figure
 
 ```{r Box plots}
 
-person <- as.factor(unique(rawdata$ID)) 
 cond <- as.factor(unique(rawdata$Condition))
-
-# a <- c()
-# for(j in cond){
-#   for(i in person){
-#     a[i] <- length(which(filter(filter(rawdata, Condition==j), ID==i)$ValueA == filter(rawdata, ID==i)$ValueB)) #count doubles
-#     a.df <- data.frame(double=a, ID=names(a)) #make data.frame 
-#     rownames(a.df) <- NULL
-#     
-#     
-#     figure3 <- ggplot(data=a.df, aes(y=a))+
-#       geom_boxplot()+
-#       theme_minimal()+
-#       scale_y_continuous(name='number of doubles per 20 rounds')+
-#       scale_x_continuous(breaks=c())
-#     
-#   cat("  \n Condition:",  paste(j), "  \n")  
-#   print(figure3)
-#   cat("  \n")
-#     
-#   }
-#   
-# }
+number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition)
+ 
+ figure3 <- ggplot(data= number.of.doubles, aes(y=n, group=Condition))+
+   geom_boxplot()+
+   theme_minimal()+
+   scale_x_continuous(breaks=c(-0.3, -0.1, 0.1, 0.3), labels=c(as.character(cond)), name="conditions")+
+   scale_y_continuous(name='number of doubles per 20 rounds')
+ 
+ #yourfilename=paste("figure3", ".jpg",sep="") #filename for sacing
+ #jpeg(file=yourfilename)
+ print(figure3)
+ #dev.off()
 
 ```
 
@@ -212,8 +210,8 @@ groups <- participants %>%
     Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
     Avg_avg_report = mean(Avg_report))
 
-print(groups)
-print(head(participants))
+kable(groups)
+kable(head(participants))
 
 ```
 
@@ -223,44 +221,46 @@ Our null hypothesis is that the reported values come from a uniform distribution
 
 This would lead to skewed distributions when the participant playes with a dishonest simulated partner who reports larger numbers with higher probability. In case of an honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
 
-We used chi-square tests to test whether the reported values come from a uniform distribution, separately for each group.
+We used chi-square goodness of fit tests to test whether the reported values come from a uniform distribution, separately for each condition.
 
 ```{r chi-square JUDIT}
 
+probabilities <- c(rep(1/6, 6))
+
+df.results <- data.frame(condition=cond, df=NA, chi.square=NA, p_value=NA)
+for(i in cond)
+{
+  reported_B <- count(filter(rawdata, Condition==i), ValueB)$n
+  results <- chisq.test(reported_B, p=probabilities, simulate.p.value = TRUE)
+  
+  df.results[which(df.results$condition==i), ]$df <- results$parameter
+  df.results[which(df.results$condition==i), ]$chi.square <- results$statistic
+   df.results[which(df.results$condition==i), ]$p_value <- results$p.value
+  
+  #cat("  \n Condition:",  paste(i), "  \n") 
+  #print(results)
+}
+
+kable(df.results, digits=2)
 
 ```
-
-We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition. We note, that Kolmogorov-Smirnov does not seem to be an appropriate test for this purpose, because this test is for continuous distributions. We used this test to make our results more comparable with...
-* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
-* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
-
-```{r Kolmogorov-Smirnov test}
-
-group_SH <- filter(rawdata, Condition == "SH")
-group_SD <- filter(rawdata, Condition == "SD")
-group_CH <- filter(rawdata, Condition == "CH")
-group_CD <- filter(rawdata, Condition == "CD")
-
-fairdice_det <- rep(1:6, round(((N/4)*20)/6))
-fairdice_rand <- sample(1:6, (N/4)*20, replace=TRUE)
-fairdice_cdf <- ecdf(1:5)
-
-ks.test(group_SH$ValueB, fairdice_det, alternative = "two.sided")
-ks.test(group_SD$ValueB, fairdice_det, alternative = "greater")
-ks.test(group_CH$ValueB, fairdice_det, alternative = "two.sided")
-ks.test(group_CD$ValueB, fairdice_det, alternative = "greater")
-
-```
-
-We also made qqplots:
+We decided not to use Kolmogorov-Smirnov, despite that it has been used previously by others (Gachter, Schulz, 2016). The large number of ties in our sample makes this test unreliable.
+  
+We also made qqplots:  
+_HOW TO MAKE THE PLOTS SQUARE?_
 
 ```{r qqplots ANNA}
 
-par(pty="s") # square plotting region
-qqplot(1:6, group_SH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SH quantiles")
-qqplot(1:6, group_SD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SD quantiles")
-qqplot(1:6, group_CH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CH quantiles")
-qqplot(1:6, group_CD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CD quantiles")
+for(i in cond)
+{
+  group_data <- filter(rawdata, Condition == i)
+  qqplot(group_data$ValueB, honestvalues, 
+         main= paste("Condition:", i, ", Q-Q Plot"),
+         xlab="reported values",
+         ylab= "honest values")
+  #cat("  \n Condition:",  paste(i), "  \n") 
+  #print(figure_qqplot)
+}
 
 ```
 
@@ -296,8 +296,8 @@ wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubl
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
 ```{r Mann-Whitney U test 2}
-wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles, conf.int = TRUE, alternative = "less")
-wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
+#wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles, conf.int = TRUE, alternative = "less")
+#wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 ## Effect size (ANNA)
