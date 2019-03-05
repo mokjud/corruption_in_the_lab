@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
 library(dplyr)
 library(ggplot2)
+library(pwr)
 ```
 
 # Description of the experiment
@@ -264,19 +265,23 @@ qqplot(1:6, group_CD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CD qu
 ```
 
 ## The number of doubles
+Ultimately, participants must report doubles, thus match their reported values to that of player A, in order to increase their payoff. The chi-square test cannot detect cheating in those groups where player A is "honest", even if player B cheats on each and every round, because the distribution of reported values would still come from a uniform distribution. Testing the mean of the reported numbers against an expected value of 3.5 does not make sense for the same reasons.
+Therefore, we also tested, whether the number of doubles is higher than its expected value of 3.33 (the probability of throwing a double is 1/6; the expected number of doubles in 20 rounds is 20*1/6 = 3.33 in case of a fair dice and honest player).
+
 Each participant ("dyad") is a single observation: the number of reported doubles  
 Wilcoxon signed-rank U test, separately for each condition  
 Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)  
-(We could similarly test the mean of the reported numbers by player B, with an expected value of 3.5, but it does not make sense, because player A is simulated)  
 
 ```{r Wilcoxon signed-rank U test}
 
 for (i in groups$Condition) {
   print(i)
   current <- filter(participants, Condition == i)
-  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "g")
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
   print(w)
 }
+
+
 
 ```
 
@@ -298,9 +303,18 @@ wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubl
 ## Effect size (ANNA)
 To estimate the effect size of the honest-dishonest treatment let's compare the choices of participant Bs, who were paired with an honest A vs. a cheating A.  
 Data: from the supplementary material of Weisel&Shalvy, 2015 and from Wouda et al., 2015  
-https://www.statmethods.net/stats/power.html
+The number of doubles in each condition against the hypothetical expected value: Wilcoxon signed-rank U test
+expected value = 3.33
+maximum value when cheating = 20
+
+Compare the number of doubles in pairs of conditions: Wilcoxon signed-rank U test 
+
+
+Monte Carlo method
+One can simulate the distribution you think the two samples come from many thousands of times using Monte Carlo methods. The percentage of those samples the Wilcoxon test correctly identifies as "different" is the power of the test. For example, if you generated 10,000 different simulated paired samples that match your actual data in terms of size and the distribution they came from, and 8,000 of them are correctly identified by the test as different, your power = 0.80.
 
 ```{r}
+
 
 ```
 
