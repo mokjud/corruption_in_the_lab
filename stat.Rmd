@@ -3,7 +3,8 @@ title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 #date: "19/12/2018"
 #output: pdf_document
-utput: word_document
+#output: word_document
+output: pdf_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -250,6 +251,10 @@ We also made qqplots:
 _HOW TO MAKE THE PLOTS SQUARE?_
 
 ```{r qqplots ANNA}
+
+
+honestvalues <- rep(1:6, 10000)
+honestvalues_cdf <- ecdf(1:5)
 
 for(i in cond)
 {
