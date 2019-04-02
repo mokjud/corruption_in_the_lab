@@ -2,16 +2,15 @@
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-#output: pdf_document
-utput: word_document
-editor_options: 
+editor_options:
   chunk_output_type: console
+utput: word_document
 ---
 
 ```{r setup, include=FALSE}
 rm(list=ls())
-N=10 # number of participants in the dummy data
-set.seed(1)
+# N=10 # number of participants in the dummy data
+# set.seed(1)
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
@@ -62,39 +61,40 @@ Data frame column names (each row is a dice roll):
 
 ```{r Generate dummy data}
 
-IDs <- sample(10000:99999, N)
-games <- sample(c("S", "C"), N, replace=TRUE)
-partners <- sample(c("H", "D"), N, replace=TRUE)
-conditions = paste(games, partners, sep="")
+# IDs <- sample(10000:99999, N)
+# games <- sample(c("S", "C"), N, replace=TRUE)
+# partners <- sample(c("H", "D"), N, replace=TRUE)
+# conditions = paste(games, partners, sep="")
+# 
+# A_honest <- sample(1:6, 20, replace=TRUE)
+# A_dishonest <- sample(4:6, 20, replace=TRUE)
+# 
+# ValueAs <- vector("integer", N*20)
+# for (i in 1:N) {
+#   if (partners[i] == "H") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_honest}
+#   if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
+# }
+# 
+# fingerratios <- rnorm(N, mean = 1, sd = 0.1)
+# salivas <- rnorm(N, mean = 3, sd = 1)
+# 
+# rawdata <- data.frame(
+#   ID = rep(IDs, times = 1, length.out = NA, each = 20), 
+#   Game = rep(games, times = 1, length.out = NA, each = 20), 
+#   Partner = rep(partners, times = 1, length.out = NA, each = 20), 
+#   Condition = rep(conditions, times = 1, length.out = NA, each = 20),
+#   Index = rep(1:20, N), 
+#   ValueA = ValueAs, 
+#   ValueB = sample(1:6, N*20, replace = TRUE), 
+#   Double = vector("logical", N*20),
+#   Q1 = sample(letters, N*20, replace = TRUE), 
+#   Q2 = sample(letters, N*20, replace = TRUE),
+#   Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
+#   Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
+# 
+# rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
 
-A_honest <- sample(1:6, 20, replace=TRUE)
-A_dishonest <- sample(4:6, 20, replace=TRUE)
-
-ValueAs <- vector("integer", N*20)
-for (i in 1:N) {
-  if (partners[i] == "H") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_honest}
-  if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
-}
-
-fingerratios <- rnorm(N, mean = 1, sd = 0.1)
-salivas <- rnorm(N, mean = 3, sd = 1)
-
-rawdata <- data.frame(
-  ID = rep(IDs, times = 1, length.out = NA, each = 20), 
-  Game = rep(games, times = 1, length.out = NA, each = 20), 
-  Partner = rep(partners, times = 1, length.out = NA, each = 20), 
-  Condition = rep(conditions, times = 1, length.out = NA, each = 20),
-  Index = rep(1:20, N), 
-  ValueA = ValueAs, 
-  ValueB = sample(1:6, N*20, replace = TRUE), 
-  Double = vector("logical", N*20),
-  Q1 = sample(letters, N*20, replace = TRUE), 
-  Q2 = sample(letters, N*20, replace = TRUE),
-  Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
-  Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
-
-rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
-
+load("C:/Users/fedor/OneDrive/Documents/R/Corruption/dummydata.RData")
 ```
 # Data checking
 
@@ -275,9 +275,8 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 ```{r Wilcoxon signed-rank U test}
 
 for (i in groups$Condition) {
-  print(i)
   current <- filter(participants, Condition == i)
-  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater")
   print(w)
 }
 
