@@ -1,10 +1,10 @@
+
 ---
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
-#date: "19/12/2018"
+date: "19/12/2018"
 #output: pdf_document
 output: word_document
-#output: pdf_document
 editor_options: 
   chunk_output_type: console
 ---
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
 library(dplyr)
 library(ggplot2)
-library(knitr)
+library(pwr)
 ```
 
 # Description of the experiment
@@ -59,6 +59,7 @@ Data frame column names (each row is a dice roll):
 * Q1: answer to first questionnaire quiestion (a random letter)
 * Q2: answer to second questionnaire question (a random letter)
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
+* Saliva: ??? (normal distribution, mean=3, sd=1)
 
 ```{r Generate dummy data}
 
@@ -77,6 +78,7 @@ for (i in 1:N) {
 }
 
 fingerratios <- rnorm(N, mean = 1, sd = 0.1)
+salivas <- rnorm(N, mean = 3, sd = 1)
 
 rawdata <- data.frame(
   ID = rep(IDs, times = 1, length.out = NA, each = 20), 
@@ -89,16 +91,17 @@ rawdata <- data.frame(
   Double = vector("logical", N*20),
   Q1 = sample(letters, N*20, replace = TRUE), 
   Q2 = sample(letters, N*20, replace = TRUE),
-  Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20))
+  Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
+  Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
 
 rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
 
 ```
 # Data checking
 
-* Check if every participant had 20 round
-    + Delete participants who had less than 20 rounds
-    + Delete excess rounds for each participant
+* Check if every participant had 20 rounds  
+  + Delete participants who had less than 20 rounds  
+  + Delete excess rounds for each participant  
 * Check if there is any missing data (columns)  
 
 ```{r Data checking}
@@ -126,7 +129,7 @@ for(i in person){
     scale_y_continuous(name="Report")+
     ggtitle(paste("subject's ID:", i ))
   
-  #cat(" subject's ID:",  paste(i), "  \n")  
+  cat(" subject's ID:",  paste(i), "  \n")  
   print(figure1)
   #dev.off() 
   cat("  \n")
@@ -156,7 +159,7 @@ for(i in cond){
       scale_y_continuous(breaks=c(1:6), limits=c(0,7))+
       scale_fill_gradient(low = "#F0F0F0", high = "black", na.value="white", limits=c(1, maximum), breaks=c(1:maximum), labels=c(1:maximum))+
       ggtitle(paste("condition", i ))
-  #cat("  \n Condition:",  paste(i), "  \n")  
+  cat("  \n Condition:",  paste(i), "  \n")  
   print(figure2)
   #dev.off()
   cat("  \n")
@@ -190,7 +193,7 @@ number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition)
 
 ## Summary of data
 
-Summary of groups:  
+Summary of groups and participants:
 ```{r Create useful variables from raw data}
 
 participants <- rawdata %>%
@@ -209,14 +212,6 @@ groups <- participants %>%
     Avg_avg_report = mean(Avg_report))
 
 kable(groups)
-
-
-```
-
-Summary of participants:  
-
-```{r Create useful variables from raw data 2.0}
-
 kable(head(participants))
 
 ```
@@ -251,29 +246,37 @@ kable(df.results, digits=2)
 
 ```
 
-We decided not to use Kolmogorov-Smirnov, despite that it has been used previously by others (Gachter, Schulz, 2016). The large number of ties in our sample makes this test unreliable.
-  
-We also made qqplots:  
-_HOW TO MAKE THE PLOTS SQUARE?_
+We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition. We note, that Kolmogorov-Smirnov does not seem to be an appropriate test for this purpose, because this test is for continuous distributions. We used this test to make our results more comparable with...
+* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
+* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
+
+```{r Kolmogorov-Smirnov test}
+
+group_SH <- filter(rawdata, Condition == "SH")
+group_SD <- filter(rawdata, Condition == "SD")
+group_CH <- filter(rawdata, Condition == "CH")
+group_CD <- filter(rawdata, Condition == "CD")
+
+fairdice_det <- rep(1:6, round(((N/4)*20)/6))
+fairdice_rand <- sample(1:6, (N/4)*20, replace=TRUE)
+fairdice_cdf <- ecdf(1:5)
+
+ks.test(group_SH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_SD$ValueB, fairdice_det, alternative = "greater")
+ks.test(group_CH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_CD$ValueB, fairdice_det, alternative = "greater")
+
+```
+
+We also made qqplots:
 
 ```{r qqplots ANNA}
 
-
-honestvalues <- rep(1:6, 10000)
-honestvalues_cdf <- ecdf(1:5)
-
-for(i in cond)
-{
-  group_data <- filter(rawdata, Condition == i)
-  par(pty="s")
-  qqplot(group_data$ValueB, honestvalues, 
-         main= paste("Condition:", i, ", Q-Q Plot"),
-         xlab="reported values",
-         ylab= "honest values")
-  
-  #cat("  \n Condition:",  paste(i), "  \n") 
-  #print(figure_qqplot)
-}
+par(pty="s") # square plotting region
+qqplot(1:6, group_SH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SH quantiles")
+qqplot(1:6, group_SD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SD quantiles")
+qqplot(1:6, group_CH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CH quantiles")
+qqplot(1:6, group_CD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CD quantiles")
 
 ```
 
@@ -287,17 +290,13 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 
 ```{r Wilcoxon signed-rank U test}
 
-w <- list()
 for (i in groups$Condition) {
-  #print(i)
+  print(i)
   current <- filter(participants, Condition == i)
-  w[[i]] <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
-  #print(w)
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
+  print(w)
 }
-result.wilcox.table <- data.frame(condition=groups$Condition,
-                                  p.value=c(w[[1]]$p.value, w[[2]]$p.value, w[[3]]$p.value, w[[4]]$p.value),
-                                  W= c(w[[1]]$statistic, w[[2]]$statistic, w[[3]]$statistic, w[[4]]$statistic))
-kable(result.wilcox.table, digits=3)
+
 
 
 ```
@@ -307,28 +306,12 @@ Mann-Whitney U test (or two-sample Wilcoxon test), one-sided.
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
-
-w1 <- wilcox.test(filter(participants, Condition=="SH")$Nbof_doubles, filter(participants, Condition=="SD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
-w2 <- wilcox.test(filter(participants, Condition=="CH")$Nbof_doubles, filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
-results.wilcox.table <- data.frame(compare=c("SH-SD", "CH-CD"),
-                                   p.value= c(w1$p.value, w2$p.value),
-                                   W= c(w1$statistic, w2$statistic))
-kable(results.wilcox.table, digits=3)
-
+wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
+wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
 ```{r Mann-Whitney U test 2}
-
-
-w1 <- wilcox.test(filter(participants, Condition=="SH")$Nbof_doubles, filter(participants, Condition=="CH")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
-w2 <- wilcox.test(filter(participants, Condition=="SD")$Nbof_doubles, filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
-results.wilcox.table <- data.frame(compare=c("SH-CH", "SD-CD"),
-                                   p.value= c(w1$p.value, w2$p.value),
-                                   W= c(w1$statistic, w2$statistic))
-kable(results.wilcox.table, digits=3)
-
-
 #wilcox.test(participants_group_SH$Nbof_doubles, participants_group_CH$Nbof_doubles, conf.int = TRUE, alternative = "less")
 #wilcox.test(participants_group_SD$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
 ```
@@ -353,27 +336,12 @@ One can simulate the distribution you think the two samples come from many thous
 
 ## Linear regression to test the effect of predictors (JUDIT)
 Dependent variable: number of reported doubles (interval)  
-Predictors: game (binary), partner (binary), fingerratio (interval)
+Predictors: game (binary), partner (binary), fingerratio (interval), hormone levels (interval)  
 
 ```{r}
-participants2 <- rawdata %>%
-  group_by(ID) %>%
-  summarize(
-    Game = unique(Game), 
-    Nbof_doubles = sum(Double), 
-    Avg_report = mean(ValueB),
-    Partner = unique(Partner),
-    Fingerratio = unique(Fingerratio))
 
-model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants2 )
-summary1 <- summary(model1)
-kable(summary1$coefficients, digits=3)
 ```
 
-Residual standard error: `r round(summary1$sigma, 3)`  
-Multiple R-squared: `r round(summary1$r.squared, 3)`  
-Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
-F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
 
 
 
