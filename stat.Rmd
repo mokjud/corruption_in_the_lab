@@ -375,3 +375,5 @@ Multiple R-squared: `r round(summary1$r.squared, 3)`
 Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
 F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
 
+
+
