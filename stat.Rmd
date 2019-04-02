@@ -356,7 +356,22 @@ Dependent variable: number of reported doubles (interval)
 Predictors: game (binary), partner (binary), fingerratio (interval)
 
 ```{r}
+participants2 <- rawdata %>%
+  group_by(ID) %>%
+  summarize(
+    Game = unique(Game), 
+    Nbof_doubles = sum(Double), 
+    Avg_report = mean(ValueB),
+    Partner = unique(Partner),
+    Fingerratio = unique(Fingerratio))
 
+model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants2 )
+summary1 <- summary(model1)
+kable(summary1$coefficients, digits=3)
 ```
 
+Residual standard error: `r round(summary1$sigma, 3)`  
+Multiple R-squared: `r round(summary1$r.squared, 3)`  
+Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
+F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
 
