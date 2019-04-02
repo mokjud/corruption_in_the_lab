@@ -1,22 +1,24 @@
+
 ---
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-editor_options:
+#output: pdf_document
+output: word_document
+editor_options: 
   chunk_output_type: console
-utput: word_document
 ---
 
 ```{r setup, include=FALSE}
 rm(list=ls())
-# N=10 # number of participants in the dummy data
-# set.seed(1)
+N=10 # number of participants in the dummy data
+set.seed(1)
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(rmarkdown)
 library(dplyr)
 library(ggplot2)
-library(knitr)
+library(pwr)
 ```
 
 # Description of the experiment
@@ -61,40 +63,39 @@ Data frame column names (each row is a dice roll):
 
 ```{r Generate dummy data}
 
-# IDs <- sample(10000:99999, N)
-# games <- sample(c("S", "C"), N, replace=TRUE)
-# partners <- sample(c("H", "D"), N, replace=TRUE)
-# conditions = paste(games, partners, sep="")
-# 
-# A_honest <- sample(1:6, 20, replace=TRUE)
-# A_dishonest <- sample(4:6, 20, replace=TRUE)
-# 
-# ValueAs <- vector("integer", N*20)
-# for (i in 1:N) {
-#   if (partners[i] == "H") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_honest}
-#   if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
-# }
-# 
-# fingerratios <- rnorm(N, mean = 1, sd = 0.1)
-# salivas <- rnorm(N, mean = 3, sd = 1)
-# 
-# rawdata <- data.frame(
-#   ID = rep(IDs, times = 1, length.out = NA, each = 20), 
-#   Game = rep(games, times = 1, length.out = NA, each = 20), 
-#   Partner = rep(partners, times = 1, length.out = NA, each = 20), 
-#   Condition = rep(conditions, times = 1, length.out = NA, each = 20),
-#   Index = rep(1:20, N), 
-#   ValueA = ValueAs, 
-#   ValueB = sample(1:6, N*20, replace = TRUE), 
-#   Double = vector("logical", N*20),
-#   Q1 = sample(letters, N*20, replace = TRUE), 
-#   Q2 = sample(letters, N*20, replace = TRUE),
-#   Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
-#   Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
-# 
-# rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
+IDs <- sample(10000:99999, N)
+games <- sample(c("S", "C"), N, replace=TRUE)
+partners <- sample(c("H", "D"), N, replace=TRUE)
+conditions = paste(games, partners, sep="")
 
-load("C:/Users/fedor/OneDrive/Documents/R/Corruption/dummydata.RData")
+A_honest <- sample(1:6, 20, replace=TRUE)
+A_dishonest <- sample(4:6, 20, replace=TRUE)
+
+ValueAs <- vector("integer", N*20)
+for (i in 1:N) {
+  if (partners[i] == "H") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_honest}
+  if (partners[i] == "D") {ValueAs[((i-1)*20+1) : ((i-1)*20+20)] <- A_dishonest}
+}
+
+fingerratios <- rnorm(N, mean = 1, sd = 0.1)
+salivas <- rnorm(N, mean = 3, sd = 1)
+
+rawdata <- data.frame(
+  ID = rep(IDs, times = 1, length.out = NA, each = 20), 
+  Game = rep(games, times = 1, length.out = NA, each = 20), 
+  Partner = rep(partners, times = 1, length.out = NA, each = 20), 
+  Condition = rep(conditions, times = 1, length.out = NA, each = 20),
+  Index = rep(1:20, N), 
+  ValueA = ValueAs, 
+  ValueB = sample(1:6, N*20, replace = TRUE), 
+  Double = vector("logical", N*20),
+  Q1 = sample(letters, N*20, replace = TRUE), 
+  Q2 = sample(letters, N*20, replace = TRUE),
+  Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = 20),
+  Saliva = rep(salivas, times = 1, length.out = NA, each = 20))
+
+rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
+
 ```
 # Data checking
 
@@ -244,23 +245,38 @@ for(i in cond)
 kable(df.results, digits=2)
 
 ```
-We decided not to use Kolmogorov-Smirnov, despite that it has been used previously by others (Gachter, Schulz, 2016). The large number of ties in our sample makes this test unreliable.
-  
-We also made qqplots:  
-_HOW TO MAKE THE PLOTS SQUARE?_
+
+We also performed Kolmogorov-Smirnov tests to see whether the reported values come from a uniform distribution in each condition. We note, that Kolmogorov-Smirnov does not seem to be an appropriate test for this purpose, because this test is for continuous distributions. We used this test to make our results more comparable with...
+* _KI HASZNALT KS-T??? WEISEL AND SHALVI, 2015-BEN NINCS!_  
+* Two-sided for conditions with honest partner, one-sided for conditions with dishonest partner (because if they cheat, we expect them to report larger numbers)  
+
+```{r Kolmogorov-Smirnov test}
+
+group_SH <- filter(rawdata, Condition == "SH")
+group_SD <- filter(rawdata, Condition == "SD")
+group_CH <- filter(rawdata, Condition == "CH")
+group_CD <- filter(rawdata, Condition == "CD")
+
+fairdice_det <- rep(1:6, round(((N/4)*20)/6))
+fairdice_rand <- sample(1:6, (N/4)*20, replace=TRUE)
+fairdice_cdf <- ecdf(1:5)
+
+ks.test(group_SH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_SD$ValueB, fairdice_det, alternative = "greater")
+ks.test(group_CH$ValueB, fairdice_det, alternative = "two.sided")
+ks.test(group_CD$ValueB, fairdice_det, alternative = "greater")
+
+```
+
+We also made qqplots:
 
 ```{r qqplots ANNA}
 
-for(i in cond)
-{
-  group_data <- filter(rawdata, Condition == i)
-  qqplot(group_data$ValueB, honestvalues, 
-         main= paste("Condition:", i, ", Q-Q Plot"),
-         xlab="reported values",
-         ylab= "honest values")
-  #cat("  \n Condition:",  paste(i), "  \n") 
-  #print(figure_qqplot)
-}
+par(pty="s") # square plotting region
+qqplot(1:6, group_SH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SH quantiles")
+qqplot(1:6, group_SD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group SD quantiles")
+qqplot(1:6, group_CH$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CH quantiles")
+qqplot(1:6, group_CD$ValueB, asp=1, xlab= "Uniform quantiles", ylab="Group CD quantiles")
 
 ```
 
@@ -275,8 +291,9 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 ```{r Wilcoxon signed-rank U test}
 
 for (i in groups$Condition) {
+  print(i)
   current <- filter(participants, Condition == i)
-  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater")
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
   print(w)
 }
 
