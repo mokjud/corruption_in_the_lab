@@ -377,3 +377,5 @@ F-statistic: `r round(summary1$fstatistic[[1]], 3)`
 
 
 
+
+
