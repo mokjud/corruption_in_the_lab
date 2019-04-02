@@ -3,9 +3,10 @@
 title: "Corruption in the lab"
 author: "Fedor Anna, Mokos Judit"
 date: "19/12/2018"
-#output: pdf_document
-output: word_document
-editor_options: 
+output:
+  html_document:
+    df_print: paged
+editor_options:
   chunk_output_type: console
 ---
 
@@ -19,6 +20,7 @@ library(rmarkdown)
 library(dplyr)
 library(ggplot2)
 library(pwr)
+library(knitr)
 ```
 
 # Description of the experiment
@@ -293,7 +295,7 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 for (i in groups$Condition) {
   print(i)
   current <- filter(participants, Condition == i)
-  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater", conf.int = TRUE)
+  w <- wilcox.test(current$Nbof_doubles, 3.33, alternative = "greater")
   print(w)
 }
 
@@ -306,8 +308,8 @@ Mann-Whitney U test (or two-sample Wilcoxon test), one-sided.
 
 The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
-wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, conf.int = TRUE, alternative = "less")
-wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles, conf.int = TRUE, alternative = "less")
+#wilcox.test(participants_group_SH$Nbof_doubles, participants_group_SD$Nbof_doubles, alternative = "less")
+#wilcox.test(participants_group_CH$Nbof_doubles, participants_group_CD$Nbof_doubles, alternative = "less")
 ```
 
 The effect of charity vs no charity with honest partner and with dishonest partner:
