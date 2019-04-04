@@ -1,0 +1,221 @@
+---
+title: "MonteCarlo"
+output: html_document
+---
+
+# Cheating
+
+## Assumptions about cheating
+
+We accepted the following assumptions about cheating: 
+
+* Participants decide to cheat with a certain probability after rolling the dice.
+* Cheating in each round is independent of the previous rounds, which is probably an oversimplification. 
+* Cheating probability is characteristic of the group (experimental condition), not the person
+
+Based on these assumptions, each round of the game consists of the following steps:
+
+* Participant learns the reported value of simulated player A
+* Participant rolls the dice
+* If he rolled a double, he reports the double
+* If he rolled a different value, he decides to cheat with a certain probability
+* If he cheats, he report the same value as player A
+* If he does not cheat, he reports the true value of his roll
+
+## The probability of cheating
+
+We estimated the probability of cheating, _p_ in condition SH based on the literature. We took the reported number of doubles, it's mean, SD, median and percentage from Wouda et al., 2015, Table 1:
+
+* Weisel & Shalvi, 2015, aligned outcomes condition: N=40, mean=16.3, SD=5.1, median=19.5, percentage=81.5%
+* Wouda et al., 2017, Study 1: N=46, mean=5.9, SD=3.8, median=6.0, percentage=29.5%
+
+D = 1/6 + p 
+p_WS = 0.6483
+p_Wa = 0.1283
+
+We also assume that having a dishonest partner increases the probability of cheating with _r_, i.e., the probability of cheating will be _p+r_ in group SD. 
+We estimated _r_ from the literature...
+
+Our third assumption is that playing a charity game also increases the probability of cheating with _r_, thus the probability of cheating will be _p+r_ in group CH. 
+
+We predict that having a dishonest partner and playing a charity game will increase the probability of cheating with more than _r_, but for the purposes of sample size calculations we will use _p+r_ in group CD too, because we would rather underestimate the effect size than overestimate it.
+
+```{r setup, include=FALSE}
+
+rm(list=ls())
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(rmarkdown)
+library(dplyr)
+library(stats)
+
+# Parameters
+
+set.seed(1)
+samplesize = 25 # sample sizes to test for power (the number of participants in each group)
+t = 20 # the number of rounds (trials) each participant plays
+d = 6 # the number of sides of the dice
+s = 1 # the number of simulations with one sample size
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData"
+
+```
+
+
+```{r load data, include=FALSE}
+# Using data from Wouda et al. 2017 to estimate participant behavior
+
+load(datafile)
+
+valueA_distr_low <- table(a_T2_all_trials$PlayerA) # in the low behavioral treatment group
+valueA_distr_high <- table(a_T9_all_trials$PlayerA) # in the high behavioral treatment group
+
+double_count_low <- a_T2_last_trial$total_doubles # in the low behavioral treatment group
+double_count_high <- a_T9_last_trial$total_doubles # in the high behavioral treatment group
+
+double_prop_low <- sum(double_count_low) / (length(double_count_low)*20)
+double_prop_high <- sum(double_count_high) / (length(double_count_high)*20)
+
+p = double_prop_low # the probability of reporting doubles in group SH (control group)
+q = double_prop_high - double_prop_low # the added probability of reporting doubles in the other groups (treatment groups)
+
+```
+
+```{r Test sample size}
+
+POWERS <- matrix(NA, 3, length(samplesize))
+
+for (n in 1:length(samplesize)) {
+  
+  # Fill in parameters
+  
+  N <- samplesize[n]
+  
+  N_SH = N
+  N_SD = N
+  N_CH = N
+  N_CD = N
+  p_SH = p
+  p_SD = p+q
+  p_CH = p+q
+  p_CD = p+q
+  
+  # Generate data frame 
+  
+  params <- matrix(c(N_SH, N_SD, N_CH, N_CD,
+                     p_SH, p_SD, p_CH, p_CD), 
+                   nrow=4, ncol=2, byrow = FALSE,
+                   dimnames=list(c("SH", "SD", "CH", "CD"), c("N", "p"))
+  )
+  dice <- 1:d
+  
+  IDs <- sample(10000:99999, sum(params[,"N"]), replace=FALSE)
+  conditions <- c(rep("SH", params["SH","N"]), 
+                  rep("SD", params["SD","N"]), 
+                  rep("CH", params["CH","N"]), 
+                  rep("CD", params["CD","N"]))
+  games <- substr(conditions,1,1)
+  partners <- substr(conditions,2,2)
+  fingerratios <- rnorm(sum(params[,"N"]), mean = 1, sd = 0.1)
+  
+  rawdata <- data.frame(
+    ID = rep(IDs, times = 1, length.out = NA, each = t), 
+    Condition = rep(conditions, times = 1, length.out = NA, each = t),
+    Game = rep(games, times = 1, length.out = NA, each = t), 
+    Partner = rep(partners, times = 1, length.out = NA, each = t), 
+    Index = rep(1:t, sum(params[,"N"])), 
+    ValueA = vector("integer", sum(params[,"N"])*t), 
+    ValueB = vector("integer", sum(params[,"N"])*t), 
+    Double = vector("logical", sum(params[,"N"])*t),
+    Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = t),
+    Q1 = sample(letters, sum(params[,"N"])*t, replace = TRUE), 
+    Q2 = sample(letters, sum(params[,"N"])*t, replace = TRUE))
+  
+  # Simulate player behavior
+  
+  counter <- rep(0, 3)
+  
+  for (i in 1:s){
+    
+    print(paste("Sample size = ", N, "; Simulation #", i, sep=""))
+    
+    # Player A
+    for (i in 1:sum(params[,"N"])) {
+      if (partners[i] == "H") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(dice, t, replace=TRUE)}
+      if (partners[i] == "D") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(a_T9_all_trials$PlayerA, t, replace=TRUE)}
+    }
+    
+    # Player B: Manipulate the number of doubles (simulate cheating)
+    be.double = c(
+      runif(params["SH", "N"]*t, min = 0, max = 1) < params["SH", "p"],
+      runif(params["SD", "N"]*t, min = 0, max = 1) < params["SD", "p"],
+      runif(params["CH", "N"]*t, min = 0, max = 1) < params["CH", "p"],
+      runif(params["CD", "N"]*t, min = 0, max = 1) < params["CD", "p"])
+    
+    for (i in 1:length(be.double)) {
+      if (be.double[i]) {rawdata$ValueB[i] <- rawdata$ValueA[i]}
+      else rawdata$ValueB[i] <- sample(dice[-rawdata$ValueA[i]], 1)
+    }
+    
+    # Detect doubles
+    rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
+    
+    # Participants
+    participants <- rawdata %>%
+      group_by(ID) %>%
+      summarize(
+        Condition = unique(Condition), 
+        Nbof_doubles = sum(Double), 
+        Avg_report = mean(ValueB))
+    
+    # Groups
+    groups <- participants %>%
+      group_by(Condition) %>%
+      summarize(
+        Nbof_participants = n_distinct(ID),
+        Nbof_doubles = sum(Nbof_doubles),
+        Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
+        Avg_avg_report = mean(Avg_report))
+    
+    print(groups)
+    
+    # Wilcoxon signed-rank U test: compare number of doubles
+    CG <- filter(participants, Condition == "SH") # control group
+    TG <- filter(participants, Condition == "SD") # treatment group
+    
+    Wc <- wilcox.test(x=CG$Nbof_doubles, mu=t/d, alternative = "greater")
+    Wt <- wilcox.test(x=TG$Nbof_doubles, mu=t/d, alternative = "greater")
+    Wct <- wilcox.test(x=CG$Nbof_doubles, y=TG$Nbof_doubles, alternative = "less")
+    
+    if (Wc$p.value < 0.05) counter[1] <- counter[1]+1
+    if (Wt$p.value < 0.05) counter[2] <- counter[2]+1
+    if (Wct$p.value < 0.05) counter[3] <- counter[3]+1
+    
+    #print(groups$Avg_nbof_doubles)
+    
+  }
+  
+  POWER <- (counter/s)*100
+  POWERS[,n] <- POWER
+  
+}
+
+# Save results and the last dataframe
+
+parameters <- data.frame(
+  tested_samplesizes = samplesize, # the number of participants in each group
+  nbof_simulations_per_samplesize = s, # the number of simulations with one sample size
+  nbof_trials = t, # the number of rounds (trials) each participant plays
+  dice_sides = d, # the number of sides of the dice
+  probof_doubles_control = p, # the probability of reporting doubles in group SH (control group)
+  added_probof_doubles_treatment = q # the added probability of reporting doubles in the other groups (treatment groups)
+)
+
+suffix <- format(Sys.time(), "%Y%m%d-%H%M%S")
+save(rawdata, parameters, POWERS, file=paste("dummydata_", suffix, ".RData", sep=""))
+
+png(filename = paste("dummydata_", suffix, ".png", sep=""))
+plot(samplesize, POWERS[1,], type = "l", xlab = "Sample size per group", ylab = "Power", col="green")
+lines(samplesize, POWERS[2,], col = "blue")
+lines(samplesize, POWERS[3,], col = "red")
+dev.off()
+```
+
