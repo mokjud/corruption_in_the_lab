@@ -3,8 +3,8 @@ title: "Monte Carlo simulations to estimate power"
 author: "Anna Fedor"
 editor_options: null
 output:
-  html_document: default
   pdf_document: default
+  #html_document: default
 chunk_output_type: console
 ---
 
@@ -25,9 +25,9 @@ library(ggplot2)
 # Parameters
 
 seed = 1 # random seed
-samplesize = seq(from=40, to=60, by=2) # sample sizes to test (the number of participants in each group)
-simulations = 1000 # the number of simulations with a given sample size
-partner_effect = 0.25 # the proportion of effect that partner type is responsible for 
+samplesize = c(3:5,10,20,30:40) # sample sizes to test (the number of participants in each group)
+simulations = 100 # the number of simulations with a given sample size
+partner_effect = 0.5 # the proportion of effect that partner type is responsible for 
 
 t = 20 # the number of rounds (trials) each participant plays
 d = 6 # the number of sides of the dice
@@ -35,7 +35,7 @@ datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/Gi
 
 ```
 
-We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve at least 95% power on all of our Wilcoxon signed rank U tests. We simulated participant behaviour based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with wich we could achieve the desired power on all of our tests.
+We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve **at least 90% power** on all of our Wilcoxon signed rank U tests. We simulated participant behaviour based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with wich we could achieve the desired power on all of our tests.
 
 # Simulating player A behavior
 
@@ -112,9 +112,9 @@ For these reasons we took the probability of reporting doubles from the High beh
 
 ## Single manipulation groups
 
-If we assume that our manipulations of partner honesty and game type have an added effect, then the probability of reporting doubles in our single manipulation groups (simple game with dishonest partner and charity game with honest partner) should be between that of the control group and the double manipulation group. The question is that how much of the effect can be attributed to either manipulation.
+If we assume that our manipulations of partner honesty and game type have an added effect, then the probability of reporting doubles in our single manipulation groups (simple game with dishonest partner and charity game with honest partner) should be between that of the control group and the double manipulation group. In these simulations we assumed that the effects of the manipulations are similar: both manipulations are responsible for **`r partner_effect*100`%** of the difference between the control group and the double manipulation group.
 
-The highest power and lowest sample size would be estimated for the comparison between groups if the effect of the two manipulations are equal. Since we have no reason to assume that te effect of the two manipulations are the same, we assumed that the effect of partner manipulation would have a higher effect: it would be responsible for  `r partner_effect*100`% of the difference between the control group and the double manipulation group.
+We note that equal effects yield the highest power on all tests and might potentially lead to underestimation of sample size. If it turns out that one of the manipulations, e.g., partner honesty has a stronger effect, then we would have underestimated power for the SH-SD and CH-CD comparisons and overestimated power for the SH-CH and SD-CD comparisons, thus efefct size would be too small for the latter to reach the desired power.
 
 ## Summary
 
@@ -326,8 +326,9 @@ parameters <- list(
   probof_doubles = c(p_SH, p_SD, p_CH, p_CD) # the probability of reporting doubles in each group
 )
 
-suffix <- format(Sys.time(), "%Y%m%d-%H%M%S")
-save(rawdata, parameters, POWERS, file=paste("dummydata_", suffix, ".RData", sep=""))
+prefix <- format(Sys.time(), "%Y%m%d-%H%M%S")
+save(rawdata, parameters, file=paste("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/", prefix, "_dummydata.RData", sep=""))
+save(parameters, POWERS, file=paste("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/", prefix, "_MonteCarlo_results.RData", sep=""))
 
 ```
 
