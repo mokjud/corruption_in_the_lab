@@ -1,119 +1,181 @@
 ---
-title: "MonteCarlo"
-output: html_document
+title: "Monte Carlo simulations to estimate power"
+author: "Anna Fedor"
+editor_options: null
+output:
+  html_document: default
+  pdf_document: default
+chunk_output_type: console
 ---
 
-# Cheating
+# Description
 
-## Assumptions about cheating
+```{r Setup, include = FALSE}
 
-We accepted the following assumptions about cheating: 
-
-* Participants decide to cheat with a certain probability after rolling the dice.
-* Cheating in each round is independent of the previous rounds, which is probably an oversimplification. 
-* Cheating probability is characteristic of the group (experimental condition), not the person
-
-Based on these assumptions, each round of the game consists of the following steps:
-
-* Participant learns the reported value of simulated player A
-* Participant rolls the dice
-* If he rolled a double, he reports the double
-* If he rolled a different value, he decides to cheat with a certain probability
-* If he cheats, he report the same value as player A
-* If he does not cheat, he reports the true value of his roll
-
-## The probability of cheating
-
-We estimated the probability of cheating, _p_ in condition SH based on the literature. We took the reported number of doubles, it's mean, SD, median and percentage from Wouda et al., 2015, Table 1:
-
-* Weisel & Shalvi, 2015, aligned outcomes condition: N=40, mean=16.3, SD=5.1, median=19.5, percentage=81.5%
-* Wouda et al., 2017, Study 1: N=46, mean=5.9, SD=3.8, median=6.0, percentage=29.5%
-
-D = 1/6 + p 
-p_WS = 0.6483
-p_Wa = 0.1283
-
-We also assume that having a dishonest partner increases the probability of cheating with _r_, i.e., the probability of cheating will be _p+r_ in group SD. 
-We estimated _r_ from the literature...
-
-Our third assumption is that playing a charity game also increases the probability of cheating with _r_, thus the probability of cheating will be _p+r_ in group CH. 
-
-We predict that having a dishonest partner and playing a charity game will increase the probability of cheating with more than _r_, but for the purposes of sample size calculations we will use _p+r_ in group CD too, because we would rather underestimate the effect size than overestimate it.
-
-```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 rm(list=ls())
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+library(knitr)
 library(rmarkdown)
 library(dplyr)
 library(stats)
+library(ggplot2)
 
 # Parameters
 
-set.seed(1)
-samplesize = 25 # sample sizes to test for power (the number of participants in each group)
+seed = 1 # random seed
+samplesize = seq(from=40, to=60, by=2) # sample sizes to test (the number of participants in each group)
+simulations = 1000 # the number of simulations with a given sample size
+partner_effect = 0.25 # the proportion of effect that partner type is responsible for 
+
 t = 20 # the number of rounds (trials) each participant plays
 d = 6 # the number of sides of the dice
-s = 1 # the number of simulations with one sample size
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData"
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData"
 
 ```
 
+We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve at least 95% power on all of our Wilcoxon signed rank U tests. We simulated participant behaviour based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with wich we could achieve the desired power on all of our tests.
 
-```{r load data, include=FALSE}
-# Using data from Wouda et al. 2017 to estimate participant behavior
+# Simulating player A behavior
+
+We planned to test our participants in four conditions with the sequential dyadic die-rolling task used by Weisel & Shalvi, 2015. The main difference is that in our experiment, player A will be simulated by the computer, although player B will be lead to believe that he is playing with a real person. Player A will be either "honest" or "dishonest". The reported values of honest player As will be sampled from a uniform distribution between 1 and 6. The reported values of dishonest player As will be sampled from the values reported by participants who were in the role of player A in Wouda et al., 2017, Study 2, High behavioral norm group. 
+
+The original authors sent us their data and script with which they calculated their statistics. In this experiment, participants's norm was manipulated by showing them results from previous experiments: either from an experiment where participants lied very often (High behavioral norm group) or from an experiment where participants lied less often (Low behavioral norm group). The manipulation affected participant behavior: Participants in the high behavioral norm group reported higher values more often and reported double rolls more often than participants in their low behavioral norm group, see the figures below.
+
+```{r Load data from Wouda et al. 2017}
 
 load(datafile)
 
+# Distribution of values reported by player A
 valueA_distr_low <- table(a_T2_all_trials$PlayerA) # in the low behavioral treatment group
 valueA_distr_high <- table(a_T9_all_trials$PlayerA) # in the high behavioral treatment group
 
+Low <- valueA_distr_low/sum(valueA_distr_low)
+High <- valueA_distr_high/sum(valueA_distr_high)
+
+barplot(rbind(Low, High), beside=TRUE, 
+        legend.text=TRUE,
+        xlab = "Reported values by player As",
+        ylab = "Proportion")
+
+# Probability of reporting doubles by player B
 double_count_low <- a_T2_last_trial$total_doubles # in the low behavioral treatment group
 double_count_high <- a_T9_last_trial$total_doubles # in the high behavioral treatment group
 
-double_prop_low <- sum(double_count_low) / (length(double_count_low)*20)
-double_prop_high <- sum(double_count_high) / (length(double_count_high)*20)
+double_prob_low <- sum(double_count_low) / (length(double_count_low)*20) # the probability of reporting doubles in the low behavioral norm group
+double_prob_high <- sum(double_count_high) / (length(double_count_high)*20) # the probability of reporting doubles in the high behavioral norm group
 
-p = double_prop_low # the probability of reporting doubles in group SH (control group)
-q = double_prop_high - double_prop_low # the added probability of reporting doubles in the other groups (treatment groups)
+boxplot(double_count_low, double_count_high, 
+        names = c("Low", "High"), 
+        ylab = "The number of doubles/dyad",
+        xlab = "Behavioral treatment group")
 
 ```
 
-```{r Test sample size}
+**The distribution of values reported by player As in the high behavioral norm group was the following (we used this distribution to sample values for our simulated dishonest player As):**
 
-POWERS <- matrix(NA, 3, length(samplesize))
+```{r Distribution of reported values by simulated dishonest player As}
+kable(valueA_distr_high)
+```
 
-for (n in 1:length(samplesize)) {
+# Simulating player B behavior
+
+For the estimation of power we simulated the behavior of player Bs too. For this, we had to guess what values would player Bs report in our control group and three experimental manipulation groups. Player Bs can only increase their payoff by reporting doubles: if they cheated, they would report more doubles than expected by chance. There is no point for player Bs to report higher values than what they actually rolled, except, if they intend to signal to player As, trying to convince them to cheat. We decided not to model this behavior for the purposes of power calculations.
+
+We simulated player B behavior in the following way. For each of our participant groups, we estimated the probability with which player Bs will report doubles. Each roll was a double with this certain probability. If a roll was a double, player B's reported value was the same as player A's value; if a roll was not a double, player B's reported value was sampled from 1 to 6 with a uniform distribution, excluding player A's value. After simulating the reported values of all participants in this way, we calculated the statistical tests and power. 
+
+For estimating the probability of reporting a double, we used data from Wouda et al., 2017, Study 2, again. We chose this experiment because this had a manipulation that we assumed that affected participant behavior similarly as our intended manipulations would do. 
+
+## Simple game with honest partner (control group)
+
+For our simple game with honest partner the probability of reporting a double was taken from the Low behavioral norm group: it was `r double_prob_low` (see their Table 1). This could potentially overestimate the probability of reporting doubles in our experiment. Differences that might lead to overestimation:
+
+- Their participants were used to participating in economic studies, which supposedly increases the tendency to cheat. Most of our participants probably did not participate in any human experiments before.
+- Despite the norm manipulation, their player As still cheated by reporting higher values more often than expected by chance, which in turn might have influenced player B behavior to cheat too. Our simulated player As will be perfectly "honest", which might discourage chating in player Bs too.
+- The norm manipulation probably affected player B behavior by its own right. Although it decreased cheating compared to the high behavioral norm group, it might have increased cheating compared to no manipulation at all (which was not tested). The figures that participants studied before the experiment showed data from Study 1, where particpants reported 30% of doubles, which is still higher than expected by chance.
+
+Overestimating the probability of reporting doubles might lead to overestimating power for a given sample size with the one sample Wilcoxon signed rank U test - however, we did not worry about this, since the sample size necessary for two-sample Wilcoxon tests will be higher, i.e., the one sample test won't be the one to define our sample size anyway.
+
+## Charity game with dishonest partner
+
+In our view, player B behavior in Wouda et al.'s Study 2 was afftected in two ways:
+
+1. By the experimental manipulation of showing them figures about the results of previous experiments
+2. By the behavior (reported values) of player A, which was also affected by the experimental manipulation
+
+In other words, player B in the high behavioral norm group was "encouraged" to cheat not only by the experimental manipulation but also by the behavior of player A. 
+
+In our charity game with dishonest partner the case is similar: player A cheats more than in the simple game with honest partner and also, there is the effect of the experimental manipulation of donating to a charity. The difference between player A behavior in our case is higher than in the Wouda et al. exeriment, which could lead to understimation of the effect, what is a safe thing to do when estimating power. As for the experimental manipulation, we have no way to guess how much charity would affect behavior in this experiment, so we just suppose that the effect would be similar to that of the norm manipulation in the Wouda et al. experiment.
+
+For these reasons we took the probability of reporting doubles from the High behavioral norm group: `r double_prob_high`. (The value 67% reported in Wouda et al., 2017, Table 2 is a typo.)
+
+## Single manipulation groups
+
+If we assume that our manipulations of partner honesty and game type have an added effect, then the probability of reporting doubles in our single manipulation groups (simple game with dishonest partner and charity game with honest partner) should be between that of the control group and the double manipulation group. The question is that how much of the effect can be attributed to either manipulation.
+
+The highest power and lowest sample size would be estimated for the comparison between groups if the effect of the two manipulations are equal. Since we have no reason to assume that te effect of the two manipulations are the same, we assumed that the effect of partner manipulation would have a higher effect: it would be responsible for  `r partner_effect*100`% of the difference between the control group and the double manipulation group.
+
+## Summary
+
+A completely honest player B would report doubles with the probability of `r 1/d`. In our power simulations we estimated that player Bs would report doubles in the different experimental groups with the following probabilities:
+
+* Simple game with honest partner:  `r double_prob_low`
+* Simple game with dishonest partner: `r double_prob_low + (double_prob_high - double_prob_low) * partner_effect`
+* Charity game with honest partner: `r double_prob_low + (double_prob_high - double_prob_low) * (1-partner_effect)`
+* Charity game with dishonest partner: `r double_prob_high`
+
+``` {r Simulations, include=FALSE}
+
+set.seed(seed)
+
+POWERS <- data.frame(
+  sample_size = samplesize,
+  SH = vector(mode="numeric", length=length(samplesize)),
+  SD = vector(mode="numeric", length=length(samplesize)),
+  CH = vector(mode="numeric", length=length(samplesize)),
+  CD = vector(mode="numeric", length=length(samplesize)),
+  SH_SD = vector(mode="numeric", length=length(samplesize)),
+  CH_CD = vector(mode="numeric", length=length(samplesize)),
+  SH_CH = vector(mode="numeric", length=length(samplesize)),
+  SD_CD = vector(mode="numeric", length=length(samplesize))
+)
+
+dice <- 1:d
+
+p_SH = double_prob_low
+p_SD = double_prob_low + (double_prob_high - double_prob_low) * partner_effect
+p_CH = double_prob_low + (double_prob_high - double_prob_low) * (1-partner_effect)
+p_CD = double_prob_high
+
+for (N in samplesize) {
   
   # Fill in parameters
-  
-  N <- samplesize[n]
   
   N_SH = N
   N_SD = N
   N_CH = N
   N_CD = N
-  p_SH = p
-  p_SD = p+q
-  p_CH = p+q
-  p_CD = p+q
-  
-  # Generate data frame 
   
   params <- matrix(c(N_SH, N_SD, N_CH, N_CD,
                      p_SH, p_SD, p_CH, p_CD), 
                    nrow=4, ncol=2, byrow = FALSE,
                    dimnames=list(c("SH", "SD", "CH", "CD"), c("N", "p"))
   )
-  dice <- 1:d
+  
+  # Generate data frame for raw data
   
   IDs <- sample(10000:99999, sum(params[,"N"]), replace=FALSE)
+  
   conditions <- c(rep("SH", params["SH","N"]), 
                   rep("SD", params["SD","N"]), 
                   rep("CH", params["CH","N"]), 
                   rep("CD", params["CD","N"]))
+  
   games <- substr(conditions,1,1)
+  
   partners <- substr(conditions,2,2)
+  
   fingerratios <- rnorm(sum(params[,"N"]), mean = 1, sd = 0.1)
   
   rawdata <- data.frame(
@@ -129,13 +191,13 @@ for (n in 1:length(samplesize)) {
     Q1 = sample(letters, sum(params[,"N"])*t, replace = TRUE), 
     Q2 = sample(letters, sum(params[,"N"])*t, replace = TRUE))
   
-  # Simulate player behavior
+  # Run simulations
   
-  counter <- rep(0, 3)
+  counter <- rep(0, 8)
   
-  for (i in 1:s){
+  for (s in 1:simulations){
     
-    print(paste("Sample size = ", N, "; Simulation #", i, sep=""))
+    print(paste("Sample size = ", N, "; Simulation #", s, sep=""))
     
     # Player A
     for (i in 1:sum(params[,"N"])) {
@@ -143,7 +205,7 @@ for (n in 1:length(samplesize)) {
       if (partners[i] == "D") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(a_T9_all_trials$PlayerA, t, replace=TRUE)}
     }
     
-    # Player B: Manipulate the number of doubles (simulate cheating)
+    # Player B
     be.double = c(
       runif(params["SH", "N"]*t, min = 0, max = 1) < params["SH", "p"],
       runif(params["SD", "N"]*t, min = 0, max = 1) < params["SD", "p"],
@@ -158,7 +220,7 @@ for (n in 1:length(samplesize)) {
     # Detect doubles
     rawdata <- mutate(rawdata, Double = ifelse(ValueA==ValueB, TRUE, FALSE))
     
-    # Participants
+    # Summary of participants
     participants <- rawdata %>%
       group_by(ID) %>%
       summarize(
@@ -166,56 +228,107 @@ for (n in 1:length(samplesize)) {
         Nbof_doubles = sum(Double), 
         Avg_report = mean(ValueB))
     
-    # Groups
+    # Summary of groups
     groups <- participants %>%
       group_by(Condition) %>%
+      arrange(desc(Condition)) %>%
       summarize(
         Nbof_participants = n_distinct(ID),
-        Nbof_doubles = sum(Nbof_doubles),
-        Avg_nbof_doubles = Nbof_doubles/Nbof_participants,
+        Nbof_doubles_per_group = sum(Nbof_doubles),
+        Avg_nbof_doubles = Nbof_doubles_per_group/Nbof_participants,
+        Median_nbof_doubles = median(Nbof_doubles),
         Avg_avg_report = mean(Avg_report))
+    groups <- arrange(groups, desc(Condition))
     
-    print(groups)
+    # One sample Wilcoxon tests
     
-    # Wilcoxon signed-rank U test: compare number of doubles
-    CG <- filter(participants, Condition == "SH") # control group
-    TG <- filter(participants, Condition == "SD") # treatment group
+    w1 <- list()
+    for (i in groups$Condition) {
+      current <- filter(participants, Condition == i)
+      w1[[i]] <- wilcox.test(x=current$Nbof_doubles, mu=t/d, alternative = "greater")
+    }
     
-    Wc <- wilcox.test(x=CG$Nbof_doubles, mu=t/d, alternative = "greater")
-    Wt <- wilcox.test(x=TG$Nbof_doubles, mu=t/d, alternative = "greater")
-    Wct <- wilcox.test(x=CG$Nbof_doubles, y=TG$Nbof_doubles, alternative = "less")
+    results.wilcox.table1 <- data.frame(
+      Condition = groups$Condition,
+      p.value = c(w1[[1]]$p.value, w1[[2]]$p.value, w1[[3]]$p.value, w1[[4]]$p.value),
+      W = c(w1[[1]]$statistic, w1[[2]]$statistic, w1[[3]]$statistic, w1[[4]]$statistic))
+
+    # Two sample Wilcoxon tests
     
-    if (Wc$p.value < 0.05) counter[1] <- counter[1]+1
-    if (Wt$p.value < 0.05) counter[2] <- counter[2]+1
-    if (Wct$p.value < 0.05) counter[3] <- counter[3]+1
+    w2 <- list()
+    w2[[1]] <- wilcox.test(x=filter(participants, Condition=="SH")$Nbof_doubles, y=filter(participants, Condition=="SD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
+    w2[[2]] <- wilcox.test(x=filter(participants, Condition=="CH")$Nbof_doubles, y=filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
     
-    #print(groups$Avg_nbof_doubles)
+    results.wilcox.table2 <- data.frame(
+      Condition = c("SH-SD", "CH-CD"),
+      p.value = c(w2[[1]]$p.value, w2[[2]]$p.value),
+      W = c(w2[[1]]$statistic, w2[[2]]$statistic))
+    
+    w3 <- list()
+    w3[[1]] <- wilcox.test(x=filter(participants, Condition=="SH")$Nbof_doubles, y=filter(participants, Condition=="CH")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
+    w3[[2]] <- wilcox.test(x=filter(participants, Condition=="SD")$Nbof_doubles, y=filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
+    
+    results.wilcox.table3 <- data.frame(
+      Condition = c("SH-CH", "SD-CD"),
+      p.value = c(w3[[1]]$p.value, w3[[2]]$p.value),
+      W = c(w3[[1]]$statistic, w3[[2]]$statistic))
+    
+    # Count significant tests
+    
+    all_tests <- rbind(results.wilcox.table1, results.wilcox.table2, results.wilcox.table3)
+    counter <- counter + as.numeric(all_tests$p.value < 0.05)
     
   }
   
   POWER <- (counter/s)*100
-  POWERS[,n] <- POWER
+  POWERS[match(N,samplesize), 2:9] <- POWER
   
 }
 
-# Save results and the last dataframe
+```
 
-parameters <- data.frame(
+# Results
+
+The results of our simulations are shown in the table and figure below. The table shows the power of all our tests by sample size.
+
+```{r Save results}
+
+# Table
+
+kable(POWERS)
+
+# Figure
+
+powerplot <- ggplot() +
+  geom_line(data = POWERS, aes(x = sample_size, y = SH), color = "red") +
+  geom_line(data = POWERS, aes(x = sample_size, y = SD), color = "yellow") +
+  geom_line(data = POWERS, aes(x = sample_size, y = CH), color = "pink") +
+  geom_line(data = POWERS, aes(x = sample_size, y = CD), color = "green") +
+  geom_line(data = POWERS, aes(x = sample_size, y = SH_SD), color = "purple") +
+  geom_line(data = POWERS, aes(x = sample_size, y = CH_CD), color = "orange") +
+  geom_line(data = POWERS, aes(x = sample_size, y = SH_CH), color = "blue") +
+  geom_line(data = POWERS, aes(x = sample_size, y = SD_CD), color = "black") +
+
+  xlab('Sample size') +
+  ylab('Power')
+
+print(powerplot)
+
+# Save results and the last raw data
+
+parameters <- list(
+  random_seed = seed,
   tested_samplesizes = samplesize, # the number of participants in each group
-  nbof_simulations_per_samplesize = s, # the number of simulations with one sample size
+  nbof_simulations_per_samplesize = simulations, # the number of simulations with one sample size
   nbof_trials = t, # the number of rounds (trials) each participant plays
   dice_sides = d, # the number of sides of the dice
-  probof_doubles_control = p, # the probability of reporting doubles in group SH (control group)
-  added_probof_doubles_treatment = q # the added probability of reporting doubles in the other groups (treatment groups)
+  dishonestA_distribution = valueA_distr_high, # the distribution of reported numbers by simulated player As
+  probof_doubles = c(p_SH, p_SD, p_CH, p_CD) # the probability of reporting doubles in each group
 )
 
 suffix <- format(Sys.time(), "%Y%m%d-%H%M%S")
 save(rawdata, parameters, POWERS, file=paste("dummydata_", suffix, ".RData", sep=""))
 
-png(filename = paste("dummydata_", suffix, ".png", sep=""))
-plot(samplesize, POWERS[1,], type = "l", xlab = "Sample size per group", ylab = "Power", col="green")
-lines(samplesize, POWERS[2,], col = "blue")
-lines(samplesize, POWERS[3,], col = "red")
-dev.off()
 ```
+
 

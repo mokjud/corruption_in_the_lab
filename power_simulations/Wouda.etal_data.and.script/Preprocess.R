@@ -23,8 +23,9 @@
 # library(gridExtra)
 # library(scales)
 
+rm(list=ls())
 #setwd('~/Dropbox/RM BSI/2nd Year/Major/Study 2/data')
-setwd('C:/Users/fedor/OneDrive/Documents/R/Corruption/Wouda.etal_data.and.script')
+setwd("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/Wouda.etal_data.and.script")
 
 ####read data####
 
@@ -51,8 +52,7 @@ mean(demo$Leeftijd) # kor
 sd(demo$Leeftijd)
 table(demo$Geslacht) # nem
 
-#data <- rbind(data1_demo, data2_demo,data3_demo, data4_demo)
-data <- rbind(data2_demo,data3_demo, data4_demo)
+data <- rbind(data1_demo, data2_demo,data3_demo, data4_demo)
 
 data_M<-data[data$Period %in% c(20),]#for manipulation check
 
@@ -65,7 +65,7 @@ data_C2_20<-data_C2[data_C2$Period %in% c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 #get treatment 9
 data_C9<-data[data$myTreatment %in% c(9),]
 
-#data_C9 <- data_C9[order(data_C9$Session, data_C9$myGroupType),]#order data
+data_C9 <- data_C9[order(data_C9$Session, data_C9$myGroupType),]#order data
 data_C9_20<-data_C9[data_C9$Period %in% c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),]#get rid of single shot trial
 
 
@@ -136,17 +136,17 @@ for (h in 1:max(data_C2_20$myGroup2))
   
   g_Dyads$Subject_A = g_1dyad_A$Subject
   g_Dyads$MyGroup2_A = g_1dyad_A$myGroup2
-  #g_Dyads$Studie_A = g_1dyad_A$Studie
+  g_Dyads$Studie_A = g_1dyad_A$Studie
   g_Dyads$Leeftijd_A = g_1dyad_A$Leeftijd
   g_Dyads$Geslacht_A = g_1dyad_A$Geslacht
-  #g_Dyads$Manipulatie_A = g_1dyad_A$Manipulatie
+  g_Dyads$Manipulatie_A = g_1dyad_A$Manipulatie
 
   g_Dyads$Subject_B = g_1dyad_B$Subject
   g_Dyads$MyGroup2_B = g_1dyad_B$myGroup2
-  #g_Dyads$Studie_B = g_1dyad_B$Studie
+  g_Dyads$Studie_B = g_1dyad_B$Studie
   g_Dyads$Leeftijd_B = g_1dyad_B$Leeftijd
   g_Dyads$Geslacht_B = g_1dyad_B$Geslacht
-  #g_Dyads$Manipulatie_B = g_1dyad_B$Manipulatie
+  g_Dyads$Manipulatie_B = g_1dyad_B$Manipulatie
   
   g_Dyads_trial20 = g_Dyads[g_Dyads$Period %in% c(20),]#get last trial
   
@@ -230,18 +230,18 @@ for (h in 1:max(data_C9_20$myGroup2))
   
   g_Dyads$Subject_A = g_1dyad_A$Subject
   g_Dyads$MyGroup2_A = g_1dyad_A$myGroup2
-  #g_Dyads$Studie_A = g_1dyad_A$Studie
+  g_Dyads$Studie_A = g_1dyad_A$Studie
   g_Dyads$Leeftijd_A = g_1dyad_A$Leeftijd
   g_Dyads$Geslacht_A = g_1dyad_A$Geslacht
-  #g_Dyads$Manipulatie_A = g_1dyad_A$Manipulatie
+  g_Dyads$Manipulatie_A = g_1dyad_A$Manipulatie
   
   g_Dyads$Subject_B = g_1dyad_B$Subject
   g_Dyads$MyGroup2_B = g_1dyad_B$myGroup2
-  #g_Dyads$Studie_B = g_1dyad_B$Studie
+  g_Dyads$Studie_B = g_1dyad_B$Studie
   g_Dyads$Leeftijd_B = g_1dyad_B$Leeftijd
   g_Dyads$Geslacht_B = g_1dyad_B$Geslacht
   g_Dyads$SONA_B = g_1dyad_B$SONA
-  #g_Dyads$Manipulatie_B = g_1dyad_B$Manipulatie
+  g_Dyads$Manipulatie_B = g_1dyad_B$Manipulatie
   
   g_Dyads_trial20 = g_Dyads[g_Dyads$Period %in% c(20),]#get last trial
   
@@ -336,11 +336,9 @@ a <- subset(d, select = c(DyadID, total_doubles, total_trials, Treatment_name))
 
 a_a = a_data_T2_T9_all_trials
 
-##########################################################################################
+#### Save data to datafile ##################################
 
-# Save data to datafile
 save(a_a, a_T2_all_trials, a_T9_all_trials, a_T2_last_trial, a_T9_last_trial, file = "Wouda_data.RData")
-
 
 # Distribution of reported values by Player As
 valueA_distr_low <- table(a_T2_all_trials$PlayerA) # in the low behavioral treatment group

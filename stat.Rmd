@@ -18,7 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/power_simulations/dummydata_20190404-101536.RData"
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/dummydata_20190508-220814.RData"
 
 ```
 
@@ -260,15 +260,15 @@ Expected value: 3.33 doubles/20 trials (16.7%; 20*1/6)
 w1 <- list()
 for (i in groups$Condition) {
   current <- filter(participants, Condition == i)
-  w1[[i]] <- wilcox.test(x=current$Nbof_doubles, mu=parameters$nbof_trials[nrow(parameters)]/parameters$dice_sides[nrow(parameters)], alternative = "greater")
+  w1[[i]] <- wilcox.test(x=current$Nbof_doubles, mu=20/6, alternative = "greater")
 }
 
-result.wilcox.table1 <- data.frame(
+results.wilcox.table1 <- data.frame(
   Condition = groups$Condition,
   p.value = c(w1[[1]]$p.value, w1[[2]]$p.value, w1[[3]]$p.value, w1[[4]]$p.value),
   W = c(w1[[1]]$statistic, w1[[2]]$statistic, w1[[3]]$statistic, w1[[4]]$statistic))
 
-kable(result.wilcox.table1, digits=10)
+kable(results.wilcox.table1, digits=10)
 
 ```
 
@@ -283,9 +283,9 @@ w2[[1]] <- wilcox.test(x=filter(participants, Condition=="SH")$Nbof_doubles, y=f
 w2[[2]] <- wilcox.test(x=filter(participants, Condition=="CH")$Nbof_doubles, y=filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
 
 results.wilcox.table2 <- data.frame(
-  Compare=c("SH-SD", "CH-CD"),
-  p.value= c(w2[[1]]$p.value, w2[[2]]$p.value),
-  W= c(w2[[1]]$statistic, w2[[2]]$statistic))
+  Condition = c("SH-SD", "CH-CD"),
+  p.value = c(w2[[1]]$p.value, w2[[2]]$p.value),
+  W = c(w2[[1]]$statistic, w2[[2]]$statistic))
 
 kable(results.wilcox.table2, digits=10)
 
@@ -299,9 +299,9 @@ w3[[1]] <- wilcox.test(x=filter(participants, Condition=="SH")$Nbof_doubles, y=f
 w3[[2]] <- wilcox.test(x=filter(participants, Condition=="SD")$Nbof_doubles, y=filter(participants, Condition=="CD")$Nbof_doubles, conf.int = TRUE, alternative = "less" )
 
 results.wilcox.table3 <- data.frame(
-  Compare=c("SH-CH", "SD-CD"),
-  p.value= c(w3[[1]]$p.value, w3[[2]]$p.value),
-  W= c(w3[[1]]$statistic, w3[[2]]$statistic))
+  Condition = c("SH-CH", "SD-CD"),
+  p.value = c(w3[[1]]$p.value, w3[[2]]$p.value),
+  W = c(w3[[1]]$statistic, w3[[2]]$statistic))
 
 kable(results.wilcox.table3, digits=10)
 
