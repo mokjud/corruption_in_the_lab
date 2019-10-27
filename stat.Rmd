@@ -18,7 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-090030_dummydata.RData"
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData"
 
 participants_2plot <- 1
 
@@ -81,10 +81,10 @@ load(datafile)
 
 # Figures
 
-## Scatter plots of individual behavior
+<!-- ## Scatter plots of individual behavior
 These plots are based on Weisel & Shalvi, 2015, Fig. S10. Each plot visualizes the behavior of one participant. Circles represent the simulated values of "player As", plus signs represent the reported values of player Bs.
 
-```{r Scatter plots}
+```{r Scatter plots, eval=FALSE, include=FALSE}
 
 person <- as.factor(unique(rawdata$ID)) 
 
@@ -107,6 +107,10 @@ for(i in person[1]){
   
 }
 ```
+ -->
+ 
+## Proportion of doubles as a function of time
+
 
 ## Heat map to demonstrate the distribution of reported numbers 
 This plot is based on Weisel & Shalvi, 2015, Fig. 2. The heat maps show the behavior of player Bs in each condition. The rectangles in the matrices are color coded according to the number of observations in them.  
@@ -184,6 +188,7 @@ groups <- participants %>%
     Nbof_doubles_per_group = sum(Nbof_doubles),
     Avg_nbof_doubles = Nbof_doubles_per_group/Nbof_participants,
     Median_nbof_doubles = median(Nbof_doubles),
+    Percentage_of_doubles = round((Nbof_doubles_per_group/(Nbof_participants*parameters$nbof_trials))*100),
     Avg_avg_report = mean(Avg_report))
 groups <- arrange(groups, desc(Condition))
 
@@ -222,8 +227,7 @@ kable(df.results, digits=2)
 
 ```
 
-We also made qqplots:  
-** NEKEM EZ NEM TUNIK INFORMATÍVNAK, NE HAGYJUK KI???**
+<!-- We also made qqplots:  
 
 ```{r qqplots}
 
@@ -244,6 +248,7 @@ for(i in cond)
 }
 
 ```
+-->
 
 ## The number of doubles
 Ultimately, participants must report doubles, thus match their reported values to that of player A, in order to increase their payoff. The chi-square test cannot detect cheating in those groups where player A is "honest", even if player B cheats on each and every round, because the distribution of reported values would still come from a uniform distribution. Testing the mean of the reported numbers against an expected value of 3.5 does not make sense for the same reasons.
