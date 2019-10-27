@@ -18,36 +18,35 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-090030_dummydata.RData"
-
-participants_2plot <- 1
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData"
 
 ```
 
-# Description of the experiment
+<!-- # Description of the experiment 
 
-Sequential dyadic die-rolling task. Two-by-two design:
+The game: Sequential dyadic die-rolling task with a simulated partner. Human participants always play the role of "Player B" (the player that rolls the dice second).
+
+Two-by-two design:
   
   * Game: simple game or charity game
-* Partner: simulated honest partner or simulated dishonest partner  
+  * Partner: simulated honest partner or simulated dishonest partner  
 
 Participants are randomly assigned to one of the four conditions:
   
   * SH: simple game with honest partner
-* SD: simple game with dishonest partner
-* CH: charity game with honest partner
-* CD: charity game with dishonest partner  
+  * SD: simple game with dishonest partner
+  * CH: charity game with honest partner
+  * CD: charity game with dishonest partner  
 
 Each participant plays 20 rounds of the game. A round of game consists of the following steps:
   
   1. The reported number of the partner appears on the screen
-2. Participant throws a dice privately
-3. Participant reports the number 
-4. Both players get a score according to the reported numbers: the score is the reported value, if they reported a double; otherwise it's 0
-5. In the charity game a charity foundation gets a small amount of donation  
+  2. Participant throws a dice privately
+  3. Participant reports the number 
+  4. Both players get a score according to the reported numbers: the score is the reported value*300, if they reported a double; otherwise it's 0
+  5. In the charity game a charity foundation gets a small amount of donation  
 
-# Dummy data
-
+# Dummy data: simulated data
 Data frame column names (each row is a dice roll):
 
 * ID: random ID of participant (10000:99999)
@@ -61,55 +60,72 @@ Data frame column names (each row is a dice roll):
 * Q1: answer to first questionnaire quiestion (a random letter)
 * Q2: answer to second questionnaire question (a random letter)
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
+-->
 
-```{r Generate dummy data}
+```{r Load data}
 
 load(datafile)
 
 ```
-# Data checking
+# Results
 
-* Check if every participant had 20 round
-+ Delete participants who had less than 20 rounds
-+ Delete excess rounds for each participant
-+ Delete participants who do not have questionnaire data
-* Check if there is any missing data (columns)  
-
+## Participants
 ```{r Data checking}
 
+participants <- rawdata %>%
+  group_by(ID) %>%
+  summarize(
+    Condition = unique(Condition), 
+    Game = unique(Game),
+    Partner = unique(Partner),
+    Nbof_rounds = max(Index),
+    Invalid_values = sum(ValueA<1)+sum(ValueA>7)+sum(ValueB<1)+sum(ValueB>7),
+    Nbof_doubles = sum(Double), 
+    Avg_report = mean(ValueB),
+    Fingerratio = unique(Fingerratio))
+
+excluded_IDs <- c(
+  participants$ID[which(participants$Nbof_rounds<20)],
+  participants$ID[which(participants$Nbof_rounds>20)], 
+  participants$ID[which(participants$Invalid_values>0)]
+)
+nbof_excluded <- length(excluded_IDs)
+
+rawdata <- filter(rawdata, is.element(ID,excluded_IDs)==FALSE)
+
+participants <- rawdata %>%
+  group_by(ID) %>%
+  summarize(
+    Condition = unique(Condition), 
+    Game = unique(Game),
+    Partner = unique(Partner),
+    Nbof_rounds = max(Index),
+    Invalid_values = sum(ValueA<1)+sum(ValueA>7)+sum(ValueB<1)+sum(ValueB>7),
+    Nbof_doubles = sum(Double), 
+    Avg_report = mean(ValueB),
+    Fingerratio = unique(Fingerratio))
+
+groups <- participants %>%
+  group_by(Condition) %>%
+  arrange(desc(Condition)) %>%
+  summarize(
+    Nbof_participants = n_distinct(ID),
+    Nbof_doubles_per_group = sum(Nbof_doubles),
+    Avg_nbof_doubles = Nbof_doubles_per_group/Nbof_participants,
+    Median_nbof_doubles = median(Nbof_doubles),
+    Percentage_of_doubles = round((Nbof_doubles_per_group/(Nbof_participants*parameters$nbof_trials))*100),
+    Avg_avg_report = mean(Avg_report))
+groups <- arrange(groups, desc(Condition))
+
 ```
 
-# Figures
+We have excluded `r nbof_excluded` participants because XXX. We kept recruiting participants until we had 36 in each condition, all in all 144 participants. Their median age was XXX (range XXX - XXX) and XXX were male.
 
-## Scatter plots of individual behavior
-These plots are based on Weisel & Shalvi, 2015, Fig. S10. Each plot visualizes the behavior of one participant. Circles represent the simulated values of "player As", plus signs represent the reported values of player Bs.
-
-```{r Scatter plots}
-
-person <- as.factor(unique(rawdata$ID)) 
-
-for(i in person[1]){
-  #yourfilename=paste("figure1_", i, ".jpg",sep="") #filename for sacing
-  #jpeg(file=yourfilename)
-  
-  figure1 <- ggplot(data=filter(rawdata, ID==i), aes(x=Index))+
-    geom_point(aes(y=ValueA), shape=1, size=5)+
-    geom_point(aes(y=ValueB), shape=3, size=2)+
-    theme_classic()+
-    scale_x_continuous(name="Round of game")+
-    scale_y_continuous(name="Reported value")+
-    ggtitle(paste("Participant ID: ", i, ", Condition: ", unique(filter(rawdata, ID==i)$Condition), sep=""))
-  
-  #cat(" subject's ID:",  paste(i), "  \n")  
-  print(figure1)
-  #dev.off() 
-  cat("  \n")
-  
-}
-```
-
-## Heat map to demonstrate the distribution of reported numbers 
-This plot is based on Weisel & Shalvi, 2015, Fig. 2. The heat maps show the behavior of player Bs in each condition. The rectangles in the matrices are color coded according to the number of observations in them.  
+HOL KERDEZZUK MEG A NEMET ES A KORT? HA A ZTREE-BEN, AKKOR BE KÉNE ÍRNI A KÓDBA EZT IS
+ 
+## The distribution of reported numbers 
+Figure XXX shows the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
+*It can be seen that the diagonal (representing doubles) is darker than the rest of the figure in all conditions and that 6-6 pairs are especially dark in conditions with a dishonest partner, as expected.*
 
 ```{r Heat maps}
 
@@ -138,68 +154,12 @@ for(i in cond){
 
 ```
 
-## Box plots of the mean number of doubles
-The boxes show the distribution of the number of doubles in each condition. 
-** FORDÍTOTT SORRENDBEN VANNAK A BOXOK!***
+We performed Chi-square tests to see if the reported values of our participants come from a uniform distribution. The results are shown in Table XXX. 
+*Reported values in conditions with a dishonest partner (SD and CD) are significantly different from the uniform distribution, probably because participants cheated and matched player As' values, which in turn were sampled from a screwed distribution. Reported values in conditions with an honest partner (SH and CH) do not differ significantly from the uniform distributions, however, these results does not show whether participants cheated. The distribution can be uniform because they did not cheat or because they cheated by matching player As' values that in turn were sampled from a uniform distribution.*
 
-```{r Box plots}
+ITT HIANYZIK A DF A TABLAZATBOL
 
-cond <- as.factor(unique(rawdata$Condition))
-number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition)
-
-figure3 <- ggplot(data= number.of.doubles, aes(y=n, group=Condition))+
-  geom_boxplot()+
-  theme_minimal()+
-  scale_x_continuous(breaks=c(-0.3, -0.1, 0.1, 0.3), labels=c(as.character(cond)), name="Conditions")+
-  scale_y_continuous(name='Number of doubles per 20 rounds')
-
-#yourfilename=paste("figure3", ".jpg",sep="") #filename for sacing
-#jpeg(file=yourfilename)
-print(figure3)
-#dev.off()
-
-```
-
-# Statistics
-
-## Summary of data
-
-```{r Create summary variables from raw data}
-
-participants <- rawdata %>%
-  group_by(ID) %>%
-  summarize(
-    Condition = unique(Condition), 
-    Game = unique(Game),
-    Partner = unique(Partner),
-    Nbof_doubles = sum(Double), 
-    Avg_report = mean(ValueB),
-    Fingerratio = unique(Fingerratio))
-
-groups <- participants %>%
-  group_by(Condition) %>%
-  arrange(desc(Condition)) %>%
-  summarize(
-    Nbof_participants = n_distinct(ID),
-    Nbof_doubles_per_group = sum(Nbof_doubles),
-    Avg_nbof_doubles = Nbof_doubles_per_group/Nbof_participants,
-    Median_nbof_doubles = median(Nbof_doubles),
-    Avg_avg_report = mean(Avg_report))
-groups <- arrange(groups, desc(Condition))
-
-kable(groups)
-
-```
-
-## Distribution of reported numbers 
-
-Our null hypothesis is that the reported values come from a uniform distribution, i.e. numbers from 1 to 6 are reported with the same probability, since we used a fair dice. Our alternative hypothesis is that participants cheat and report doubles in order to inflate their profit.  
-
-This would lead to skewed distributions when the participant playes with a dishonest simulated partner who reports larger numbers with higher probability. In case of an honest simulated partner, whose dice throw values were sampled from a uniform distribution, we expect that the participants' reported values also come from a uniform ditribution (although it is possible that participants try to signal to their supposed partners to cheat by occassionally reporting 6s, but we do not expect this to create a significant difference).
-
-We used chi-square goodness of fit tests to test whether the reported values come from a uniform distribution, separately for each condition. We decided not to use Kolmogorov-Smirnov, despite that it has been used previously by others (Gachter, Schulz, 2016), BECAUSE The large number of ties in our sample makes this test unreliable.
-
-```{r chi-square JUDIT}
+```{r Chi-square}
 
 probabilities <- c(rep(1/6, 6))
 
@@ -222,32 +182,41 @@ kable(df.results, digits=2)
 
 ```
 
-We also made qqplots:  
-** NEKEM EZ NEM TUNIK INFORMATÍVNAK, NE HAGYJUK KI???**
+## The number of doubles
 
-```{r qqplots}
+Figure XXX shows the number of doubles reported by all participants as a function of time in each condition.
+*It can be seen that the number of doubles does not increase over time.*
 
-honestvalues <- rep(1:6, 10000)
-honestvalues_cdf <- ecdf(1:5)
-
-for(i in cond)
-{
-  group_data <- filter(rawdata, Condition == i)
-  par(pty="s")
-  qqplot(group_data$ValueB, honestvalues, 
-    main= paste("Condition:", i, ", Q-Q Plot"),
-    xlab="Reported values",
-    ylab= "Honest values")
-  
-  #cat("  \n Condition:",  paste(i), "  \n") 
-  #print(figure_qqplot)
-}
+```{r Doubles and time}
 
 ```
 
-## The number of doubles
-Ultimately, participants must report doubles, thus match their reported values to that of player A, in order to increase their payoff. The chi-square test cannot detect cheating in those groups where player A is "honest", even if player B cheats on each and every round, because the distribution of reported values would still come from a uniform distribution. Testing the mean of the reported numbers against an expected value of 3.5 does not make sense for the same reasons.
-Therefore, we also tested, whether the number of doubles is higher than its expected value of 3.33 (the probability of throwing a double is 1/6; the expected number of doubles in 20 rounds is 20*1/6 = 3.33 in case of a fair dice and honest player) with Wilcoxon signed-rank U test, separately for each condition.
+The boxplots of Figure XXX show the distribution of the number of doubles in each condition, summed for all rounds of the game.
+
+** FORDÍTOTT SORRENDBEN VANNAK A BOXOK!***
+
+```{r Box plots}
+
+cond <- as.factor(unique(rawdata$Condition))
+number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition)
+
+figure3 <- ggplot(data= number.of.doubles, aes(y=n, group=Condition))+
+  geom_boxplot()+
+  theme_minimal()+
+  scale_x_continuous(breaks=c(-0.3, -0.1, 0.1, 0.3), labels=c(as.character(cond)), name="Conditions")+
+  scale_y_continuous(name='Number of doubles per 20 rounds')
+
+#yourfilename=paste("figure3", ".jpg",sep="") #filename for sacing
+#jpeg(file=yourfilename)
+print(figure3)
+#dev.off()
+
+```
+
+We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition, see Table XXX.
+*All tests showed that the number of doubles is significantly higher than expected by chance, meaning that participants cheated in all conditions.*
+
+EBBE A TÁBLÁZATBA MEG BELE KENE TENNI A MEDIAN NUMBER OF DOBLES-T, NEM?
 
 ```{r Wilcoxon signed-rank U test}
 
@@ -266,10 +235,9 @@ kable(results.wilcox.table1, digits=10)
 
 ```
 
-## Compare the number of doubles in pairs of conditions
-We compared the number of doubles in pairs of conditions with one-sided Mann-Whitney U test (or two-sample Wilcoxon test): the effect of dishonest partners vs honest partners in the simple game and in the charity game and the effect of charity vs no charity with honest partner and with dishonest partner.
+We compared the number of doubles in pairs of conditions with two-sample Wilcoxon tests (one-sided Mann-Whitney U tests). The results of testing the effect of dishonest partners vs honest partners in the simple game and in the charity game are shown in Table XXX.
+*Both comparisons yielded significant results supporting the moral alignment hypothesis.*
 
-The effect of dishonest partners vs honest partners in the simple game and in the charity game:
 ```{r Mann-Whitney U test 1}
 
 w2 <- list()
@@ -285,7 +253,9 @@ kable(results.wilcox.table2, digits=10)
 
 ```
 
-The effect of charity vs no charity with honest partner and with dishonest partner:
+The results of testing the effect of charity vs no charity with honest partner and with dishonest partner are shown in Table XXX.
+*Both comparisons yielded significant results supporting the charity hypothesis*
+
 ```{r Mann-Whitney U test 2}
 
 w3 <- list()
@@ -301,8 +271,7 @@ kable(results.wilcox.table3, digits=10)
 
 ```
 
-## The effect of predictors
-We tested the effect of predictors with linear regression. The dependent variable was the number of reported doubles (interval) and predictors were game (binary), partner (binary) and fingerratio (interval).
+Finally, we tested the effect of predictors with linear regression, see Table XXX. The dependent variable was the number of reported doubles (interval) and predictors were game (binary), partner (binary) and fingerratio (interval).
 
 ```{r}
 
