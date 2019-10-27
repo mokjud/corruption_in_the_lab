@@ -38,11 +38,11 @@ t = 20 # the number of rounds (trials) each participant plays
 d = 6 # the number of sides of the dice
 datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData"
 setwd("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/")
-seed = Sys.time() # random seed
+seed = "2019-10-01 20:13:36" #Sys.time() # random seed
 
 ```
 
-We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve **at least 90% power** on all of our Wilcoxon signed rank U tests. We simulated participant behavior based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with wich we could achieve the desired power on all of our tests. The random seed for the simulations was set to be the current date and time: `r seed`.
+We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve **at least 90% power** on all of our Wilcoxon signed rank U tests. We simulated participant behavior based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with which we could achieve the desired power on all of our tests. The random seed for the simulations was set to be the then current date and time: `r seed`.
 
 # Simulating player A behavior
 
