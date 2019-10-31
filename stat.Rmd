@@ -18,7 +18,8 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData"
+#datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
+#datafile = "/Users/mokosjudit/Documents/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
 
 ```
 
@@ -62,9 +63,25 @@ Data frame column names (each row is a dice roll):
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
 -->
 
-```{r Load data}
+```{r Load data, warning=F, error=F, message=F}
 
-load(datafile)
+#load(datafile)
+rawdata <- read.csv("/Users/mokosjudit/Google Drive/KorrupciÃ³_a_laborban_Ã¶tletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
+ 
+
+  a <- count(rawdata, ID, Condition)/20
+  tested_samplesizes <- sum(a$n)
+
+
+
+parameters <- list(random_seed=NA, 
+                   tested_samplesizes=tested_samplesizes,
+                   nbof_simulations_per_samplesize=NA,
+                   nbof_trials=20, 
+                   dice_sides=6,
+                   dishonestA_distribution=NA,
+                   probof_doubles=NA )
+
 
 ```
 # Results
@@ -119,12 +136,11 @@ groups <- arrange(groups, desc(Condition))
 
 ```
 
-We have excluded `r nbof_excluded` participants because XXX. We kept recruiting participants until we had 36 in each condition, all in all 144 participants. Their median age was XXX (range XXX - XXX) and XXX were male.
+We have excluded `r nbof_excluded` participants because XXX. We kept recruiting participants until we had 36 in each condition, all in all 144 participants. Their median age was `r median(rawdata$age)` (range `r min(rawdata$age)`  - `r max(rawdata$age)`) and `r length(which(rawdata$sex==1))/20` were male.
 
-HOL KERDEZZUK MEG A NEMET ES A KORT? HA A ZTREE-BEN, AKKOR BE KÉNE ÍRNI A KÓDBA EZT IS
  
 ## The distribution of reported numbers 
-Figure XXX shows the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
+The following shows the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
 *It can be seen that the diagonal (representing doubles) is darker than the rest of the figure in all conditions and that 6-6 pairs are especially dark in conditions with a dishonest partner, as expected.*
 
 ```{r Heat maps}
@@ -157,7 +173,10 @@ for(i in cond){
 We performed Chi-square tests to see if the reported values of our participants come from a uniform distribution. The results are shown in Table XXX. 
 *Reported values in conditions with a dishonest partner (SD and CD) are significantly different from the uniform distribution, probably because participants cheated and matched player As' values, which in turn were sampled from a screwed distribution. Reported values in conditions with an honest partner (SH and CH) do not differ significantly from the uniform distributions, however, these results does not show whether participants cheated. The distribution can be uniform because they did not cheat or because they cheated by matching player As' values that in turn were sampled from a uniform distribution.*
 
-ITT HIANYZIK A DF A TABLAZATBOL
+ITT HIANYZIK A DF A TABLAZATBOL  
+
+We've specified simulate.p.value = TRUE, so chisq.test will use a test statistic and P-value based on a Monte Carlo approach. In this case, there is no assumed chi-square distribution for the test statistic, so there is also no df parameter involved.  
+
 
 ```{r Chi-square}
 
@@ -184,7 +203,7 @@ kable(df.results, digits=2)
 
 ## The number of doubles
 
-Figure XXX shows the number of doubles reported by all participants as a function of time in each condition.
+The following figure shows the number of doubles reported by all participants as a function of time in each condition.
 *It can be seen that the number of doubles does not increase over time.*
 
 ```{r Doubles and time}
@@ -193,17 +212,17 @@ Figure XXX shows the number of doubles reported by all participants as a functio
 
 The boxplots of Figure XXX show the distribution of the number of doubles in each condition, summed for all rounds of the game.
 
-** FORDÍTOTT SORRENDBEN VANNAK A BOXOK!***
+** FORD?TOTT SORRENDBEN VANNAK A BOXOK!*** a kÃ©palÃ¡Ã­rÃ¡s egyezik, milyen sorrendben kÃ©ne lenni? tÃ¶kre elfelejtettem ezeket, bocsi :(
 
 ```{r Box plots}
 
 cond <- as.factor(unique(rawdata$Condition))
 number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition)
 
-figure3 <- ggplot(data= number.of.doubles, aes(y=n, group=Condition))+
+figure3 <- ggplot(data= number.of.doubles, aes(y=n, x=Condition))+
   geom_boxplot()+
   theme_minimal()+
-  scale_x_continuous(breaks=c(-0.3, -0.1, 0.1, 0.3), labels=c(as.character(cond)), name="Conditions")+
+  scale_x_discrete(name="Conditions")+
   scale_y_continuous(name='Number of doubles per 20 rounds')
 
 #yourfilename=paste("figure3", ".jpg",sep="") #filename for sacing
@@ -216,20 +235,23 @@ print(figure3)
 We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition, see Table XXX.
 *All tests showed that the number of doubles is significantly higher than expected by chance, meaning that participants cheated in all conditions.*
 
-EBBE A TÁBLÁZATBA MEG BELE KENE TENNI A MEDIAN NUMBER OF DOBLES-T, NEM?
+EBBE A T?BL?ZATBA MEG BELE KENE TENNI A MEDIAN NUMBER OF DOBLES-T, NEM? KÃ‰SZ 
 
 ```{r Wilcoxon signed-rank U test}
 
 w1 <- list()
+median1 <- c()
 for (i in groups$Condition) {
   current <- filter(participants, Condition == i)
+  median1[i] <- median(current$Nbof_doubles)
   w1[[i]] <- wilcox.test(x=current$Nbof_doubles, mu=20/6, alternative = "greater")
 }
 
 results.wilcox.table1 <- data.frame(
   Condition = groups$Condition,
   p.value = c(w1[[1]]$p.value, w1[[2]]$p.value, w1[[3]]$p.value, w1[[4]]$p.value),
-  W = c(w1[[1]]$statistic, w1[[2]]$statistic, w1[[3]]$statistic, w1[[4]]$statistic))
+  W = c(w1[[1]]$statistic, w1[[2]]$statistic, w1[[3]]$statistic, w1[[4]]$statistic),
+  median=c(median1))
 
 kable(results.wilcox.table1, digits=10)
 
@@ -275,16 +297,16 @@ Finally, we tested the effect of predictors with linear regression, see Table XX
 
 ```{r}
 
-model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
-summary1 <- summary(model1)
-kable(summary1$coefficients, digits=3)
+#model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
+#summary1 <- summary(model1)
+#kable(summary1$coefficients, digits=3)
 
 ```
 
-Residual standard error: `r round(summary1$sigma, 3)`  
-Multiple R-squared: `r round(summary1$r.squared, 3)`  
-Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
-F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
+Residual standard error: `r #round(summary1$sigma, 3)`  
+Multiple R-squared: `r #round(summary1$r.squared, 3)`  
+Adjusted R-squared: `r #round(summary1$adj.r.squared, 3)`  
+F-statistic: `r #round(summary1$fstatistic[[1]], 3)`  
 
 
 
