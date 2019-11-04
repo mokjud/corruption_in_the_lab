@@ -30,8 +30,8 @@ knitr::opts_chunk$set(include=TRUE, echo = FALSE, message = FALSE, warning = FAL
 
 # Parameters
 
-samplesize = c(36) # sample sizes to test (the number of participants in each group)
-simulations = 1 # the number of simulations with a given sample size
+samplesize = 30:40 # sample sizes to test (the number of participants in each group)
+simulations = 10000 # the number of simulations with a given sample size
 partner_effect = 0.5 # the proportion of effect that partner type is responsible for 
 
 t = 20 # the number of rounds (trials) each participant plays
