@@ -8,6 +8,8 @@ output:
   html_document: default
 chunk_output_type: console
 ---
+
+This document contains the results of the pilot data. 
   
 ```{r setup, include=FALSE}
 
@@ -62,6 +64,7 @@ Data frame column names (each row is a dice roll):
 * Q2: answer to second questionnaire question (a random letter)
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
 -->
+
 
 ```{r Load data, warning=F, error=F, message=F}
 
@@ -182,9 +185,8 @@ for(i in cond){
 We performed Chi-square tests to see if the reported values of our participants come from a uniform distribution. The results are shown in Table XXX.  
 *Reported values in conditions with a dishonest partner (SD and CD) are significantly different from the uniform distribution, probably because participants cheated and matched player As' values, which in turn were sampled from a screwed distribution. Reported values in conditions with an honest partner (SH and CH) do not differ significantly from the uniform distributions, however, these results does not show whether participants cheated. The distribution can be uniform because they did not cheat or because they cheated by matching player As' values that in turn were sampled from a uniform distribution.*
 
-ITT HIANYZIK A DF A TABLAZATBOL  
 
-We've specified simulate.p.value = TRUE, so chisq.test will use a test statistic and P-value based on a Monte Carlo approach. In this case, there is no assumed chi-square distribution for the test statistic, so there is also no df parameter involved.  
+We have specified simulate.p.value = TRUE, so chisq.test will use a test statistic and P-value based on a Monte Carlo approach. In this case, there is no assumed chi-square distribution for the test statistic, so there is also no df parameter involved.  
 
 
 ```{r Chi-square}
@@ -219,9 +221,8 @@ The following figure shows the number of doubles reported by all participants as
 
 ```
 
-The boxplots of Figure XXX show the distribution of the number of doubles in each condition, summed for all rounds of the game.
+The follwowing boxplots show the distribution of the number of doubles in each condition, summed for all rounds of the game.
 
-** FORD?TOTT SORRENDBEN VANNAK A BOXOK!*** a képaláírás egyezik, milyen sorrendben kéne lenni? tökre elfelejtettem ezeket, bocsi :(
 
 ```{r Box plots}
 
