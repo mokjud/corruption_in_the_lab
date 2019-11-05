@@ -69,7 +69,9 @@ Data frame column names (each row is a dice roll):
 ```{r Load data, warning=F, error=F, message=F}
 
 #load(datafile)
-rawdata <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
+#rawdata <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
+rawdata <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_and_questions_pilot.csv")
+
 rawdata$Condition_ordered <- factor(rawdata$Condition, levels=c("SH", "SD", "CH", "CD"), ordered=TRUE)
 
   a <- count(rawdata, ID, Condition)
@@ -104,6 +106,8 @@ participants <- rawdata %>%
     Nbof_doubles = sum(Double), 
     Avg_report = mean(ValueB),
     Fingerratio = unique(Fingerratio))
+
+# later the results of the questionnaries will be included here as well. 
 
 excluded_IDs <- c(
   participants$ID[which(participants$Nbof_rounds<20)],
@@ -309,16 +313,16 @@ Finally, we tested the effect of predictors with linear regression, see Table XX
 
 ```{r}
 
-#model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
-#summary1 <- summary(model1)
-#kable(summary1$coefficients, digits=3)
+model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
+summary1 <- summary(model1)
+kable(summary1$coefficients, digits=3)
 
 ```
 
-Residual standard error: `r #round(summary1$sigma, 3)`  
-Multiple R-squared: `r #round(summary1$r.squared, 3)`  
-Adjusted R-squared: `r #round(summary1$adj.r.squared, 3)`  
-F-statistic: `r #round(summary1$fstatistic[[1]], 3)`  
+Residual standard error: `r round(summary1$sigma, 3)`  
+Multiple R-squared: `r round(summary1$r.squared, 3)`  
+Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
+F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
 
 
 
