@@ -71,13 +71,13 @@
                                                      dishonest_nocharity$double17, dishonest_nocharity$double18, dishonest_nocharity$double19, dishonest_nocharity$double20)
                                            )
   
-  honest_nocharity_rawdata <- data.frame(Time=honest_nocharity[,1], 
-                                         ID=honest_nocharity$IDnumber, 
-                                         age=honest_nocharity$kor ,
-                                         sex=honest_nocharity$nem ,
+  honest_charity_rawdata <- data.frame(Time=honest_charity[,1], 
+                                         ID=honest_charity$IDnumber, 
+                                         age=honest_charity$kor ,
+                                         sex=honest_charity$nem ,
                                          Foundation=NA,
-                                         Condition= "SH",
-                                         Game="S", 
+                                         Condition= "CH",
+                                         Game="C", 
                                          Partner="H", 
                                          Index=rep(c(1:20), each=length(honest_charity$subjects)), 
                                          ValueA=c(honest_charity$dobas1, honest_charity$dobas2, honest_charity$dobas3, honest_charity$dobas4, 
@@ -96,6 +96,32 @@
                                                   honest_charity$double13, honest_charity$double14, honest_charity$double15, honest_charity$double16,
                                                   honest_charity$double17, honest_charity$double18, honest_charity$double19, honest_charity$double20)
                                           )
+  
+  honest_nocharity_rawdata <- data.frame(Time=honest_nocharity[,1], 
+                                         ID=honest_nocharity$IDnumber, 
+                                         age=honest_nocharity$kor ,
+                                         sex=honest_nocharity$nem ,
+                                         Foundation=NA,
+                                         Condition= "SH",
+                                         Game="S", 
+                                         Partner="H", 
+                                         Index=rep(c(1:20), each=length(honest_nocharity$subjects)), 
+                                         ValueA=c(honest_nocharity$dobas1, honest_nocharity$dobas2, honest_nocharity$dobas3, honest_nocharity$dobas4, 
+                                                  honest_nocharity$dobas5, honest_nocharity$dobas6, honest_nocharity$dobas7, honest_nocharity$dobas8,
+                                                  honest_nocharity$dobas9, honest_nocharity$dobas10, honest_nocharity$dobas11, honest_nocharity$dobas12,
+                                                  honest_nocharity$dobas13, honest_nocharity$dobas14, honest_nocharity$dobas15, honest_nocharity$dobas16,
+                                                  honest_nocharity$dobas17, honest_nocharity$dobas18, honest_nocharity$dobas19, honest_nocharity$dobas20), 
+                                         ValueB=c(honest_nocharity$honest1, honest_nocharity$honest2, honest_nocharity$honest3, honest_nocharity$honest4, 
+                                                  honest_nocharity$honest5, honest_nocharity$honest6, honest_nocharity$honest7, honest_nocharity$honest8,
+                                                  honest_nocharity$honest9, honest_nocharity$honest10, honest_nocharity$honest11, honest_nocharity$honest12,
+                                                  honest_nocharity$honest13, honest_nocharity$honest14, honest_nocharity$honest15, honest_nocharity$honest16,
+                                                  honest_nocharity$honest17, honest_nocharity$honest18, honest_nocharity$honest19, honest_nocharity$honest20), 
+                                         Double=c(honest_nocharity$double1, honest_nocharity$double2, honest_nocharity$double3, honest_nocharity$double4, 
+                                                  honest_nocharity$double5, honest_nocharity$double6, honest_nocharity$double7, honest_nocharity$double8,
+                                                  honest_nocharity$double9, honest_nocharity$double10, honest_nocharity$double11, honest_nocharity$double12,
+                                                  honest_nocharity$double13, honest_nocharity$double14, honest_nocharity$double15, honest_nocharity$double16,
+                                                  honest_nocharity$double17, honest_nocharity$double18, honest_nocharity$double19, honest_nocharity$double20)
+  )
 
 
 #make all the variable character to avoid potential dataloss. 
@@ -172,13 +198,14 @@ write.csv(fulldata_rawdata, file = "/Users/mokosjudit/Google Drive/Korrupció_a_
     # convert all the variable in questions to character to avoid potential dataloss. 
     questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
     
-
-    
     # loop that merge the two dataset. 
     for(i in 1:length(questions$Idobelyeg))
     {
       fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
+    
+    fulldata_rawdata_questions$Fingerratio <- as.numberic(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)
+    fulldata_rawdata_questions #this is the dataset that is used in Stat.Rmd
     
 ### saving the datatable that contains all the information about the participants
     write.csv(fulldata_rawdata_questions, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_and_questions_pilot.csv")
