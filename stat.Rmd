@@ -270,7 +270,7 @@ kable(results.wilcox.table1, digits=10)
 ```
 
 We compared the number of doubles in pairs of conditions with two-sample Wilcoxon tests (one-sided Mann-Whitney U tests). The results of testing the effect of dishonest partners vs honest partners in the simple game and in the charity game are shown in Table XXX.
-*Both comparisons yielded significant results supporting the moral alignment hypothesis.*
+*Both comparisons yielded significant results supporting the moral erosion hypothesis.*
 
 ```{r Mann-Whitney U test 1}
 
