@@ -3,6 +3,15 @@
 ### STARTED 2019. NOV 5 ###
 ##############################
 
+# As the original xls output file of the ztree is not suitable for R, we converted all the original output xls files to csv by hand. 
+# You can find these converted files in the supplementary materials. To reproduce this code, please download it and follow the comments of this script. 
+# The Files folder of the supplementary material contains 
+  # the original ztree output files converted to csv files, 
+  # in the "template_datasets" folder 4 empty template tables (proba_dishonest_charity.csv, proba_dishonest_nocharity.csv, proba_honest_charity.csv, proba_honest_nocharity.csv)
+  # the table that is the result of this script and is used by the Stat.Rmd code (data_ztree.cs)
+  # the dataset of the google questionnaries
+
+
 
 #### PILOT DATA ###
 
@@ -204,7 +213,7 @@ write.csv(fulldata_rawdata, file = "/Users/mokosjudit/Google Drive/Korrupció_a_
       fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
     
-    fulldata_rawdata_questions$Fingerratio <- as.numberic(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)
+    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)
     fulldata_rawdata_questions #this is the dataset that is used in Stat.Rmd
     
 ### saving the datatable that contains all the information about the participants
