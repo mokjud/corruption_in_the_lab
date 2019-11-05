@@ -147,7 +147,7 @@ groups <- arrange(groups, desc(Condition))
 We have excluded `r nbof_excluded` participants because XXX. We kept recruiting participants until we had 36 in each condition, all in all 144 participants. Their median age was `r median(rawdata$age)` (range `r min(rawdata$age)`  - `r max(rawdata$age)`) and `r length(which(rawdata$sex==1))/20` were male.
 
 10 people participated in the pilot study. One was excluded because the game had a bug that made the results of this participant unreliable.  
-Number of participants:  
+Number of participants in the conditions:  
 SH: `r count(rawdata, Condition=="SH")$n[2]/20`
 SD: `r count(rawdata, Condition=="SD")$n[2]/20`
 CH: `r count(rawdata, Condition=="CH")$n[2]/20`
@@ -156,7 +156,7 @@ CD: `r count(rawdata, Condition=="CD")$n[2]/20`
 
 
 ## The distribution of reported numbers 
-The following shows the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
+The following figures show the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
 *It can be seen that the diagonal (representing doubles) is darker than the rest of the figure in all conditions and that 6-6 pairs are especially dark in conditions with a dishonest partner, as expected.*
 
 ```{r Heat maps}
@@ -225,7 +225,7 @@ The following figure shows the number of doubles reported by all participants as
 
 ```
 
-The follwowing boxplots show the distribution of the number of doubles in each condition, summed for all rounds of the game.
+The following boxplots show the distribution of the number of doubles in each condition, summed for all rounds of the game.
 
 
 ```{r Box plots}
@@ -248,7 +248,7 @@ print(figure3)
 
 ```
 
-We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition, see Table XXX.
+We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition, see Table XXX.  
 *All tests showed that the number of doubles is significantly higher than expected by chance, meaning that participants cheated in all conditions.*
 
 
@@ -273,7 +273,7 @@ kable(results.wilcox.table1, digits=10)
 
 ```
 
-We compared the number of doubles in pairs of conditions with two-sample Wilcoxon tests (one-sided Mann-Whitney U tests). The results of testing the effect of dishonest partners vs honest partners in the simple game and in the charity game are shown in Table XXX.
+We compared the number of doubles in pairs of conditions with two-sample Wilcoxon tests (one-sided Mann-Whitney U tests). The results of testing the effect of dishonest partners vs honest partners in the simple game and in the charity game are shown in Table XXX.  
 *Both comparisons yielded significant results supporting the moral alignment hypothesis.*
 
 ```{r Mann-Whitney U test 1}
@@ -291,7 +291,7 @@ kable(results.wilcox.table2, digits=10)
 
 ```
 
-The results of testing the effect of charity vs no charity with honest partner and with dishonest partner are shown in Table XXX.
+The results of testing the effect of charity vs no charity with honest partner and with dishonest partner are shown in Table XXX.  
 *Both comparisons yielded significant results supporting the charity hypothesis*
 
 ```{r Mann-Whitney U test 2}
@@ -309,7 +309,7 @@ kable(results.wilcox.table3, digits=10)
 
 ```
 
-Finally, we tested the effect of predictors with linear regression, see Table XXX. The dependent variable was the number of reported doubles (interval) and predictors were game (binary), partner (binary) and fingerratio (interval).
+Finally, we tested the effect of predictors with linear regression, see Table XXX. The dependent variable was the number of reported doubles (interval) and predictors were game (binary), partner (binary) and fingerratio (interval).  
 
 ```{r}
 
