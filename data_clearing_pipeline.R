@@ -428,5 +428,33 @@ library("dplyr")
   write.csv(fulldata_rawdata, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
   
   
+### TESTING THE DICE
+  #used test: chi-square goodness-of-fit test
+  megfigy <- c(124, 116, 119, 114, 108, 122)
+  n=sum(megfigy)
+  valosz <- rep(1/6, 6)
+  chisq.test(x=megfigy, p=valosz)  
   
+  
+  
+### ADDING THE RESULTS OF THE QUESTIONNAIRES TO THE DATASET
+  questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv")
+  question_length <-   dim(questions)[2]
+  fulldata_length <- dim(fulldata_rawdata)[2]+1
+  final_length <- question_length+fulldata_length
+  fulldata_rawdata[,c(fulldata_length:final_length)] <- NA
+  colnames(fulldata_rawdata)[c(fulldata_length:final_length)] <-   colnames(questions)
+  
+  length(colnames(questions))
+  
+  
+  for(i in 1: length(fulldata_rawdata$ID))
+  {
+    questions[which(questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.==fulldata_rawdata$ID[2]), ]
+   
+  }
+  
+  
+  questions[which(questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.==fulldata_rawdata$ID[2]), ]
+  fulldata_rawdata$ID
   
