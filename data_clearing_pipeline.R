@@ -10,7 +10,7 @@
   # in the "template_datasets" folder 4 empty template tables (proba_dishonest_charity.csv, proba_dishonest_nocharity.csv, proba_honest_charity.csv, proba_honest_nocharity.csv)
   # the table that is the result of this script and is used by the Stat.Rmd code (data_ztree.cs)
 
-## Setup
+#### Setup ####
 
   rm(list=ls())
   library("dplyr")
@@ -20,7 +20,7 @@
   setwd(datadir)
   #setwd("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv")
   
-## Create a list with that contains all the output file of ztree
+#### Create a list with that contains all the output file of ztree ####
   temp <- list.files(pattern="*.csv") #list csv filenames in the folder
   myfiles <- lapply(temp, read.csv) #creating a list that contains all the original datasets. the elements of the list are data.frames 
   
@@ -28,7 +28,7 @@
     for(i in 1:length(temp))
     {myfiles[[i]][,1:length(myfiles[[i]])] <- sapply(myfiles[[i]][,1:length(myfiles[[i]])], as.character)}
 
-## sort the datafiles into 4 categories based on the type of the game 
+#### sort the datafiles into 4 categories based on the type of the game ####
   # filling up 4 empty data.frames
     dishonest_charity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_charity.csv", sep=""), header = T)  #reading this file might lead to warninng message that doesn't effect the script (In read.table(file = file, header = header, sep = sep, quote = quote,  :incomplete final line found by readTableHeader)
     dishonest_nocharity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_nocharity.csv", sep=""), header = T)
@@ -78,7 +78,7 @@
               honest_nocharity[counter.honest_nocharity, ] <- myfiles[[i]][3,]            
             } } } } }
 
-#Create the dataframe that Stat.Rmd uses
+#### Create the dataframe that Stat.Rmd uses ####
   dishonest_charity_rawdata <- data.frame(Time=dishonest_charity[,1], 
                                           ID=dishonest_charity$IDnumber, 
                                           age=dishonest_charity$kor ,
@@ -191,7 +191,7 @@
     honest_charity_rawdata[,1:length(honest_charity_rawdata)] <- sapply(honest_charity_rawdata[,1:length(honest_charity_rawdata)], as.character)
     honest_nocharity_rawdata[,1:length(honest_nocharity_rawdata)] <- sapply(honest_nocharity_rawdata[,1:length(honest_nocharity_rawdata)], as.character)
 
-## create one dataset that contains the results of the four games
+#### create one dataset that contains the results of the four games ####
   fulldata_rawdata <- data.frame(Time=c(dishonest_charity_rawdata$Time, dishonest_nocharity_rawdata$Time, honest_charity_rawdata$Time, honest_nocharity_rawdata$Time),
                                  ID=c(dishonest_charity_rawdata$ID, dishonest_nocharity_rawdata$ID, honest_charity_rawdata$ID, honest_nocharity_rawdata$ID), 
                                  age=c(dishonest_charity_rawdata$age, dishonest_nocharity_rawdata$age, honest_charity_rawdata$age, honest_nocharity_rawdata$age), 
@@ -217,7 +217,7 @@
 
  
 
-## games that was played by the experimenters has the ID number of 1000 or 999. These rows need to be deleted. 
+#### games that was played by the experimenters has the ID number of 1000 or 999. These rows need to be deleted.  ####
 
   fulldata_rawdata <- filter(fulldata_rawdata, ID!=1000) #exclude trial cases. 
   fulldata_rawdata <- filter(fulldata_rawdata, ID!=999) #exclude trial cases. 
@@ -237,30 +237,31 @@
   
   
   
-  ### ADDING THE RESULTS OF THE QUESTIONNAIRES TO THE DATASET
-  questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv")
-  question_length <-   dim(questions)[2]
-  fulldata_length <- dim(fulldata_rawdata)[2]+1
-  final_length <- question_length+fulldata_length
-  fulldata_rawdata[,c(fulldata_length:final_length)] <- NA
-  colnames(fulldata_rawdata)[c(fulldata_length:final_length)] <-   colnames(questions)
-  
-  length(colnames(questions))
-  
-  
-  for(i in 1: length(fulldata_rawdata$ID))
-  {
-    questions[which(questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.==fulldata_rawdata$ID[2]), ]
+#### Adding the results of tha questionnaries to the dataset ####
+  # read the dataset
+    #questions <- read.csv(paste(datadir, "template_datasets/", sep=""), header = T)  
+    questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
+  # merging the questionnaries and the game dataset
+    fulldata_rawdata_questions <- fulldata_rawdata
+    question_length <-   dim(questions)[2] # number of columns of questionnaries
+    fulldata_length <- dim(fulldata_rawdata)[2] # number of columns of game data
+    final_length <- question_length+fulldata_length #
     
-  }
+    fulldata_rawdata_questions[,c((fulldata_length+1):final_length)] <- NA # datatable with as many empty columns as the questionnaries. 
+    colnames(fulldata_rawdata_questions)[c((fulldata_length+1):final_length)] <-   colnames(questions)
+  
+  # convert all the variable in questions to character to avoid potential dataloss. 
+    questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
+  
+  # loop that merge the two dataset. 
+    for(i in 1:length(questions$Idobelyeg))
+    {
+      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
+    }
+    
+    #Stat.Rmd use the following dataset: fulldata_rawdata_questions
+  
+  ### saving the datatable that contains all the information about the participants
+    #write.csv(fulldata_rawdata_questions, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_and_questions_pilot.csv")
   
   
-  questions[which(questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.==fulldata_rawdata$ID[2]), ]
-  fulldata_rawdata$ID
-  
-  
-
-## save the dataframe into a csv
-  write.csv(fulldata_rawdata, file = paste(datadir, "/data_ztree.csv", sep="")) # this is the csv file that is used by Stat.Rmd
-  
-
