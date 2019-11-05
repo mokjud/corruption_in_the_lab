@@ -9,6 +9,7 @@
   # the original ztree output files converted to csv files, 
   # in the "template_datasets" folder 4 empty template tables (proba_dishonest_charity.csv, proba_dishonest_nocharity.csv, proba_honest_charity.csv, proba_honest_nocharity.csv)
   # the table that is the result of this script and is used by the Stat.Rmd code (data_ztree.cs)
+  # the dataset of the google questionnaries.
 
 #### Setup ####
 
