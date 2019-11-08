@@ -17,7 +17,7 @@
   library("dplyr")
 
   #download the folder of the original output files of ztree from the supplementary materials
-  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/" # set that folder here 
+  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/data" # set that folder here 
   setwd(datadir)
   #setwd("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv")
   
@@ -31,10 +31,10 @@
 
 #### sort the datafiles into 4 categories based on the type of the game ####
   # filling up 4 empty data.frames
-    dishonest_charity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_charity.csv", sep=""), header = T)  #reading this file might lead to warninng message that doesn't effect the script (In read.table(file = file, header = header, sep = sep, quote = quote,  :incomplete final line found by readTableHeader)
-    dishonest_nocharity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_nocharity.csv", sep=""), header = T)
-    honest_charity <- read.csv(paste(datadir, "template_datasets/proba_honest_charity.csv", sep=""), header = T)
-    honest_nocharity <- read.csv(paste(datadir, "template_datasets/proba_honest_nocharity.csv", sep=""), header = T)
+    dishonest_charity <- read.csv(paste(datadir, "/template_datasets/proba_dishonest_charity.csv", sep=""), header = T)  #reading this file might lead to warninng message that doesn't effect the script (In read.table(file = file, header = header, sep = sep, quote = quote,  :incomplete final line found by readTableHeader)
+    dishonest_nocharity <- read.csv(paste(datadir, "/template_datasets/proba_dishonest_nocharity.csv", sep=""), header = T)
+    honest_charity <- read.csv(paste(datadir, "/template_datasets/proba_honest_charity.csv", sep=""), header = T)
+    honest_nocharity <- read.csv(paste(datadir, "/template_datasets/proba_honest_nocharity.csv", sep=""), header = T)
 
   # make all the variable character to avoid potential dataloss
     dishonest_charity[,1:length(dishonest_charity)] <- sapply(dishonest_charity[,1:length(dishonest_charity)], as.character)
@@ -241,7 +241,9 @@
 #### Adding the results of tha questionnaries to the dataset ####
   # read the dataset
     #questions <- read.csv(paste(datadir, "template_datasets/", sep=""), header = T)  
-    questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
+    #questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
+    questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok) - A(z) 1. lapon lévő válaszok2019.nov.8.csv") 
+  
   # merging the questionnaries and the game dataset
     fulldata_rawdata_questions <- fulldata_rawdata
     question_length <-   dim(questions)[2] # number of columns of questionnaries
@@ -255,12 +257,12 @@
     questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
   
   # loop that merge the two dataset. 
-    for(i in 1:length(questions$Idobelyeg))
+    for(i in 1:length(questions$Időbélyeg))
     {
-      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
+      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$X1..Kérjük.írja.be.a.korábban.kapott.négyjegyű.számot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
     
-    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)
+    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kéz.mutató.ujjának.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kéz.gyűrűs.ujjának.hossza..mm.)
     
     
     #Stat.Rmd use the following dataset: fulldata_rawdata_questions
