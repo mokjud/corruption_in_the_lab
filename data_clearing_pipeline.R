@@ -260,7 +260,8 @@
       fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
     
-    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)
+    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)
+    
     
     #Stat.Rmd use the following dataset: fulldata_rawdata_questions
   
