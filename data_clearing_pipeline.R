@@ -239,7 +239,7 @@
   
 #### Adding the results of tha questionnaries to the dataset ####
   # read the dataset
-    questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (válaszok) - A(z) 1. lapon lévő válaszok2019.nov.8.csv"))
+    questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (valaszok)nov10.csv"))
   
   # merging the questionnaries and the game dataset
     fulldata_rawdata_questions <- fulldata_rawdata
@@ -254,12 +254,12 @@
     questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
   
   # loop that merge the two dataset. 
-    for(i in 1:length(questions$Időbélyeg))
+    for(i in 1:length(questions$Id.ob.elyeg))
     {
-      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$X1..Kérjük.írja.be.a.korábban.kapott.négyjegyű.számot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
+      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
     
-    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kéz.mutató.ujjának.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kéz.gyűrűs.ujjának.hossza..mm.)
+    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.mutato.ujj.anak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.gyurus.ujj.anak.hossza..mm.)
     
     
     #Stat.Rmd use the following dataset: fulldata_rawdata_questions
