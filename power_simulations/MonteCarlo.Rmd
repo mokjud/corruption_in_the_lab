@@ -30,19 +30,18 @@ knitr::opts_chunk$set(include=TRUE, echo = FALSE, message = FALSE, warning = FAL
 
 # Parameters
 
-samplesize = c(36) # sample sizes to test (the number of participants in each group)
-simulations = 1 # the number of simulations with a given sample size
-partner_effect = 0.5 # the proportion of effect that partner type is responsible for 
+samplesize = c(36) # sample sizes to test (the number of participants in each group); for the power simulations we used samplesize = 30:40
+simulations = 1 # the number of simulations with a given sample size; for the power simulations we used simulations = 10000
 
-t = 20 # the number of rounds (trials) each participant plays
-d = 6 # the number of sides of the dice
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData"
-setwd("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/")
-seed = "2019-10-01 20:13:36" #Sys.time() # random seed
+resultsfolder = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/" # this is where the results will be saved
+
+seed = Sys.time() # random seed; fort the power simulations seed was "2019-10-01 20:13:36" 
 
 ```
 
 We used this script to estimate the necessary sample size for our experiments to reach enough power. Our goal was to achieve **at least 90% power** on all of our Wilcoxon signed rank U tests. We simulated participant behavior based on our assumptions and tested the outcome with a series of sample sizes. We ran **`r simulations` simulations with each sample size** and calculated power for a given sample size and a given comparison as the percentage of simulations where the Wilcoxon signed rank U test was significant, i.e., detected a true difference. We decided to choose the smallest sample size with which we could achieve the desired power on all of our tests. The random seed for the simulations was set to be the then current date and time: `r seed`.
+
+(This script can also be used to generate simulated data if simulations=1. In this case, instead of power simulations, the result will be a saved csv datafile containing the variable called rawdata.)
 
 # Simulating player A behavior
 
@@ -50,41 +49,35 @@ We planned to test our participants in four conditions with the sequential dyadi
 
 The original authors sent us their data and script with which they calculated their statistics. In their experiment, participants's norm was manipulated by showing them results from previous experiments: either from an experiment where participants cheated quite often (High behavioral norm group) or from an experiment where participants cheated less often (Low behavioral norm group). The manipulation affected participant behavior: Participants in the high behavioral norm group reported higher values more often and reported double rolls more often than participants in the low behavioral norm group, see the figures below.
 
-```{r Load data from Wouda et al. 2017}
+```{r Parameters}
 
-load(datafile)
+# Parameters extracted from from Wouda et al. 2017, Study 2
+valueA_distr_high = data.frame(Value=c(1:6), Frequency=c(36,25,41,51,66,181))
+double_prob_low = 0.4666667 
+double_prob_high = 0.6275
 
-# Distribution of values reported by player A
-valueA_distr_low <- table(a_T2_all_trials$PlayerA) # in the low behavioral treatment group
-valueA_distr_high <- table(a_T9_all_trials$PlayerA) # in the high behavioral treatment group
-
-Low <- valueA_distr_low/sum(valueA_distr_low)
-High <- valueA_distr_high/sum(valueA_distr_high)
-
-barplot(rbind(Low, High), beside=TRUE, 
-        legend.text=TRUE,
-        args.legend = c(x="topleft"),
-        xlab = "Reported values by player As",
-        ylab = "Proportion")
-
-# Probability of reporting doubles by player B
-double_count_low <- a_T2_last_trial$total_doubles # in the low behavioral treatment group
-double_count_high <- a_T9_last_trial$total_doubles # in the high behavioral treatment group
-
-double_prob_low <- sum(double_count_low) / (length(double_count_low)*20) # the probability of reporting doubles in the low behavioral norm group
-double_prob_high <- sum(double_count_high) / (length(double_count_high)*20) # the probability of reporting doubles in the high behavioral norm group
-
-boxplot(double_count_low, double_count_high, 
-        names = c("Low", "High"), 
-        ylab = "The number of doubles/dyad",
-        xlab = "Behavioral treatment")
+# Other parameters
+partner_effect = 0.5 # the proportion of effect that partner type is responsible for 
+t = 20 # the number of rounds (trials) each participant plays
+d = 6 # the number of sides of the dice
 
 ```
 
 The distribution of values reported by player As in the high behavioral norm group was the following. We used this distribution to sample values for our simulated dishonest player As:
 
 ```{r Distribution of reported values by simulated dishonest player As}
+
 kable(valueA_distr_high)
+
+PlayerA_High = c(
+  rep(1,valueA_distr_high[1,2]),
+  rep(2,valueA_distr_high[2,2]),
+  rep(3,valueA_distr_high[3,2]),
+  rep(4,valueA_distr_high[4,2]),
+  rep(5,valueA_distr_high[5,2]),
+  rep(6,valueA_distr_high[6,2])
+)
+
 ```
 
 # Simulating player B behavior
@@ -161,7 +154,6 @@ for (N in samplesize) {
   runtime <- Sys.time() - start_time
   start_time <- Sys.time()
   message(paste("Sample size = ", N, ", Time: ", Sys.time(), ", runtime = ", runtime, sep=""))
-
   
   # Fill in parameters
   
@@ -200,10 +192,8 @@ for (N in samplesize) {
     ValueA = vector("integer", sum(params[,"N"])*t), 
     ValueB = vector("integer", sum(params[,"N"])*t), 
     Double = vector("logical", sum(params[,"N"])*t),
-    Fingerratio = rep(fingerratios, times = 1, length.out = NA, each = t),
-    Q1 = sample(letters, sum(params[,"N"])*t, replace = TRUE), 
-    Q2 = sample(letters, sum(params[,"N"])*t, replace = TRUE))
-  
+    Fingerratio = rnorm(1, mean=1, sd=0.2))
+
   # Run simulations
   
   counter <- rep(0, 8)
@@ -215,7 +205,7 @@ for (N in samplesize) {
     # Player A
     for (i in 1:sum(params[,"N"])) {
       if (partners[i] == "H") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(dice, t, replace=TRUE)}
-      if (partners[i] == "D") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(a_T9_all_trials$PlayerA, t, replace=TRUE)}
+      if (partners[i] == "D") {rawdata$ValueA[((i-1)*t+1) : (i*t)] <- sample(PlayerA_High, t, replace=TRUE)}
     }
     
     # Player B
@@ -302,31 +292,13 @@ for (N in samplesize) {
 
 # Results
 
-After simulating the reported values of all participants in this way, we calculated the statistical tests that we planned for our experiments and then calculated power for each test. The results of our simulations are shown in the table and figure below. The table shows the power of the one-sample Wilcoxon tests (columns 2-5) and the two-sample Wilcoxon tests (columns 6-9). We chose the sample size with which all tests had a power of at least 90%: .
+After simulating the reported values of all participants in this way, we calculated the statistical tests that we planned for our experiments and then calculated power for each test. The results of our simulations are shown in the table and figure below. The table shows the power of the one-sample Wilcoxon tests (columns 2-5) and the two-sample Wilcoxon tests (columns 6-9). We chose the sample size with which all tests had a power of at least 90.
 
 ```{r Save results}
 
 # Table
 
 kable(POWERS)
-
-# Figure
-# 
-# plot(POWERS[,1], POWERS[,6], type="l")
-# lines(POWERS[,1], POWERS[,7], col="blue")
-# lines(POWERS[,1], POWERS[,8], col="red")
-# lines(POWERS[,1], POWERS[,9], col="green")
-
-# POWERS.df <- data.frame(
-#   sample_size = rep(samplesize, times=8),
-#   power = as.vector(t(POWERS[,2:9])),
-#   test = rep(names(POWERS)[2:9], times=length(samplesize))
-# )
-# 
-# powerplot <- ggplot(data=POWERS.df, aes(x=sample_size, y=power, col=test)) +
-#   geom_line() 
-# 
-# print(powerplot)
 
 # Save results and the last raw data
 
@@ -341,10 +313,13 @@ parameters <- list(
 )
 
 prefix <- format(seed, "%Y%m%d-%H%M%S")
-save(rawdata, parameters, file=paste("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/", prefix, "_dummydata.RData", sep=""))
-save(parameters, POWERS, file=paste("C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/", prefix, "_MonteCarlo_results.RData", sep=""))
-
-message(Sys.time())
+if (simulations==1){
+  #save(rawdata, parameters, file=paste(resultsfolder, prefix, "_dummydata.RData", sep=""))
+  write.csv(rawdata, file=paste(resultsfolder, prefix, "_dummydata.csv", sep=""))
+}
+if (simulations>1){
+  save(parameters, POWERS, file=paste(resultsfolder, prefix, "_MonteCarlo_results.RData", sep=""))
+}
 
 ```
 

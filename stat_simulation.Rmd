@@ -8,10 +8,8 @@ output:
   html_document: default
 chunk_output_type: console
 ---
-
-This document contains the results of the simulated dataset. 
   
-```{r setup, include=FALSE}
+```{r Setup and parameters, include=FALSE}
 
 rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -20,8 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-#datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
-datafile = "/Users/mokosjudit/Documents/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191001-201336_dummydata.RData" 
 
 ```
 
@@ -53,45 +50,30 @@ Each participant plays 20 rounds of the game. A round of game consists of the fo
 Data frame column names (each row is a dice roll):
 
 * ID: random ID of participant (10000:99999)
+* Condition: one of the four experimental conditions (SH, SD, CH, CD)
 * Game: simple or charity (S/C)
 * Partner: honest or dishonest (H/D)
-* Condition: one of the four experimental conditions (SH, SD, CH, CD)
 * Index: index of round of game (1:20)
 * ValueA: value of simulated dice roll (1:6)
 * ValueB: value of participant's reported dice roll (1:6)
 * Double: whether the participant reported a double (1/0)
+* Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
 * Q1: answer to first questionnaire quiestion (a random letter)
 * Q2: answer to second questionnaire question (a random letter)
-* Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
 -->
 
 
 ```{r Load data, warning=F, error=F, message=F}
 
 load(datafile)
-#rawdata <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
-rawdata$Condition_ordered <- factor(rawdata$Condition, levels=c("SH", "SD", "CH", "CD"), ordered=TRUE)
-
- # a <- count(rawdata, ID, Condition)
- # a$n <- a$n/20
- # tested_samplesizes <- sum(a$n)
-
-
-
-#parameters <- list(random_seed=NA, 
-                  # tested_samplesizes=tested_samplesizes,
-                   #nbof_simulations_per_samplesize=NA,
-                   #nbof_trials=20, 
-                   #dice_sides=6,
-                   #dishonestA_distribution=NA,
-                   #probof_doubles=NA )
-
 
 ```
 # Results
 
 ## Participants
 ```{r Data checking}
+
+rawdata$Condition_ordered <- factor(rawdata$Condition, levels=c("SH", "SD", "CH", "CD"), ordered=TRUE)
 
 participants <- rawdata %>%
   group_by(ID) %>%

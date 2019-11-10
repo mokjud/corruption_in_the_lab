@@ -1,6 +1,7 @@
-### CORRUPTION IN THE LAB ###
+### CORRUPTION IN THE LAB  ###
 ### DATA CLEARING PIPELINE ### 
 ### STARTED 2019. OCT. 28. ###
+### AUTHOR: JUDIT MOKOS    ###
 ##############################
 
 # As the original xls output file of the ztree is not suitable for R, we converted all the original output xls files to csv by hand. 
@@ -11,16 +12,17 @@
   # the table that is the result of this script and is used by the Stat.Rmd code (data_ztree.cs)
   # the dataset of the google questionnaries.
 
-#### Setup ####
+#### Setup and parameters ####
 
   rm(list=ls())
   library("dplyr")
 
   #download the folder of the original output files of ztree from the supplementary materials
   datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/" # set that folder here 
-  setwd(datadir)
-  #setwd("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv")
+  datadir <- "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/csv/" 
   
+  setwd(datadir)
+
 #### Create a list with that contains all the output file of ztree ####
   temp <- list.files(pattern="*.csv") #list csv filenames in the folder
   myfiles <- lapply(temp, read.csv) #creating a list that contains all the original datasets. the elements of the list are data.frames 
@@ -31,10 +33,10 @@
 
 #### sort the datafiles into 4 categories based on the type of the game ####
   # filling up 4 empty data.frames
-    dishonest_charity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_charity.csv", sep=""), header = T)  #reading this file might lead to warninng message that doesn't effect the script (In read.table(file = file, header = header, sep = sep, quote = quote,  :incomplete final line found by readTableHeader)
-    dishonest_nocharity <- read.csv(paste(datadir, "template_datasets/proba_dishonest_nocharity.csv", sep=""), header = T)
-    honest_charity <- read.csv(paste(datadir, "template_datasets/proba_honest_charity.csv", sep=""), header = T)
-    honest_nocharity <- read.csv(paste(datadir, "template_datasets/proba_honest_nocharity.csv", sep=""), header = T)
+    dishonest_charity <- read.csv(paste(datadir, "data/template_datasets/proba_dishonest_charity.csv", sep=""), header = T)  #reading this file might lead to warninng message that doesn't effect the script (In read.table(file = file, header = header, sep = sep, quote = quote,  :incomplete final line found by readTableHeader)
+    dishonest_nocharity <- read.csv(paste(datadir, "data/template_datasets/proba_dishonest_nocharity.csv", sep=""), header = T)
+    honest_charity <- read.csv(paste(datadir, "data/template_datasets/proba_honest_charity.csv", sep=""), header = T)
+    honest_nocharity <- read.csv(paste(datadir, "data/template_datasets/proba_honest_nocharity.csv", sep=""), header = T)
 
   # make all the variable character to avoid potential dataloss
     dishonest_charity[,1:length(dishonest_charity)] <- sapply(dishonest_charity[,1:length(dishonest_charity)], as.character)

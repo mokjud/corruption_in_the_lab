@@ -4,14 +4,15 @@ author: "Fedor Anna, Mokos Judit"
 editor_options: null
 output:
   word_document: default
-  pdf_document: default
-  html_document: default
+  #pdf_document: default
+  #html_document: default
 chunk_output_type: console
 ---
 
-This document contains the results of the pilot data. 
+<!-- This script contains all of our confirmatory data analysis for the Corruption in the lab project. Input is a datafile that contains the raw data from the game. Output (plots and the results of statistical tests) are printed in a word document. Lines in italics contain our predictions about the results and are true for the simulated data. They might not be true for real data. -->
+
   
-```{r setup, include=FALSE}
+```{r Setup and parameters, include=FALSE}
 
 rm(list=ls())
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -20,14 +21,14 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 
-#datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
-#datafile = "/Users/mokosjudit/Documents/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191002-102445_dummydata.RData" 
+# The csv datafile containing the dataframe called rawdata that has all the results from the ztree game
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191110-125402_dummydata.csv" 
 
 ```
 
 <!-- # Description of the experiment 
 
-The game: Sequential dyadic die-rolling task with a simulated partner. Human participants always play the role of "Player B" (the player that rolls the dice second).
+The game: Sequential dyadic die-rolling task with a simulated partner. Human participants always play the role of "player B" (the player that rolls the dice second).
 
 Two-by-two design:
   
@@ -49,43 +50,27 @@ Each participant plays 20 rounds of the game. A round of game consists of the fo
   4. Both players get a score according to the reported numbers: the score is the reported value*300, if they reported a double; otherwise it's 0
   5. In the charity game a charity foundation gets a small amount of donation  
 
-# Dummy data: simulated data
-Data frame column names (each row is a dice roll):
+Data frame column names for rawdata (each row is a dice roll):
 
 * ID: random ID of participant (10000:99999)
+* Condition: one of the four experimental conditions (SH, SD, CH, CD)
 * Game: simple or charity (S/C)
 * Partner: honest or dishonest (H/D)
-* Condition: one of the four experimental conditions (SH, SD, CH, CD)
 * Index: index of round of game (1:20)
 * ValueA: value of simulated dice roll (1:6)
 * ValueB: value of participant's reported dice roll (1:6)
 * Double: whether the participant reported a double (1/0)
-* Q1: answer to first questionnaire quiestion (a random letter)
-* Q2: answer to second questionnaire question (a random letter)
 * Fingerratio: ratio of two fingers (normal distribution, mean=1, sd=0.1)
+
 -->
 
 
 ```{r Load data, warning=F, error=F, message=F}
 
-#load(datafile)
-rawdata <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
+rawdata <- read.csv(datafile)
 rawdata$Condition_ordered <- factor(rawdata$Condition, levels=c("SH", "SD", "CH", "CD"), ordered=TRUE)
 
-  a <- count(rawdata, ID, Condition)
-  a$n <- a$n/20
-  tested_samplesizes <- sum(a$n)
-
-
-
-parameters <- list(random_seed=NA, 
-                   tested_samplesizes=tested_samplesizes,
-                   nbof_simulations_per_samplesize=NA,
-                   nbof_trials=20, 
-                   dice_sides=6,
-                   dishonestA_distribution=NA,
-                   probof_doubles=NA )
-
+Dice_values <- sort(unique(rawdata$ValueA))
 
 ```
 # Results
@@ -100,31 +85,22 @@ participants <- rawdata %>%
     Game = unique(Game),
     Partner = unique(Partner),
     Nbof_rounds = max(Index),
-    Invalid_values = sum(ValueA<1)+sum(ValueA>7)+sum(ValueB<1)+sum(ValueB>7),
+    Invalid_values = sum(ValueA<min(Dice_values)+sum(ValueA>max(Dice_values))+sum(ValueB<min(Dice_values))+sum(ValueB>max(Dice_values))),
     Nbof_doubles = sum(Double), 
     Avg_report = mean(ValueB),
     Fingerratio = unique(Fingerratio))
 
+trials <- median(participants$Nbof_rounds)
+
 excluded_IDs <- c(
-  participants$ID[which(participants$Nbof_rounds<20)],
-  participants$ID[which(participants$Nbof_rounds>20)], 
+  participants$ID[which(participants$Nbof_rounds<trials)],
+  participants$ID[which(participants$Nbof_rounds>trials)], 
   participants$ID[which(participants$Invalid_values>0)]
 )
 nbof_excluded <- length(excluded_IDs)
 
 rawdata <- filter(rawdata, is.element(ID,excluded_IDs)==FALSE)
-
-participants <- rawdata %>%
-  group_by(ID) %>%
-  summarize(
-    Condition = unique(Condition), 
-    Game = unique(Game),
-    Partner = unique(Partner),
-    Nbof_rounds = max(Index),
-    Invalid_values = sum(ValueA<1)+sum(ValueA>7)+sum(ValueB<1)+sum(ValueB>7),
-    Nbof_doubles = sum(Double), 
-    Avg_report = mean(ValueB),
-    Fingerratio = unique(Fingerratio))
+participants <- filter(participants, is.element(ID,excluded_IDs)==FALSE)
 
 groups <- participants %>%
   group_by(Condition) %>%
@@ -134,25 +110,18 @@ groups <- participants %>%
     Nbof_doubles_per_group = sum(Nbof_doubles),
     Avg_nbof_doubles = Nbof_doubles_per_group/Nbof_participants,
     Median_nbof_doubles = median(Nbof_doubles),
-    Percentage_of_doubles = round((Nbof_doubles_per_group/(Nbof_participants*parameters$nbof_trials))*100),
+    Percentage_of_doubles = round((Nbof_doubles_per_group/(Nbof_participants*trials))*100),
     Avg_avg_report = mean(Avg_report))
 groups <- arrange(groups, desc(Condition))
 
 ```
 
-We have excluded `r nbof_excluded` participants because XXX. We kept recruiting participants until we had 36 in each condition, all in all 144 participants. Their median age was `r median(rawdata$age)` (range `r min(rawdata$age)`  - `r max(rawdata$age)`) and `r length(which(rawdata$sex==1))/20` were male.
-
-10 people participated in the pilot study. One was excluded because the game had a bug that made the results of this participant unreliable.  
-Number of participants:  
-SH: `r count(rawdata, Condition=="SH")$n[2]/20`
-SD: `r count(rawdata, Condition=="SD")$n[2]/20`
-CH: `r count(rawdata, Condition=="CH")$n[2]/20`
-CD: `r count(rawdata, Condition=="CD")$n[2]/20`  
-
+We have excluded `r nbof_excluded` participants because XXX. There were `r groups$Nbof_participants` number of participants in conditions `r groups$Condition`, respectively.   
+Their median age was `r median(rawdata$age)` (range `r min(rawdata$age)`  - `r max(rawdata$age)`) and `r length(which(rawdata$sex==1))/20` were male.
 
 
 ## The distribution of reported numbers 
-The following shows the frequency of value pairs in the four conditions: Higher frequency pairs are darker. 
+The following figures (Figure XXX) shows the frequency of value pairs in the four conditions. 
 *It can be seen that the diagonal (representing doubles) is darker than the rest of the figure in all conditions and that 6-6 pairs are especially dark in conditions with a dishonest partner, as expected.*
 
 ```{r Heat maps}
@@ -170,9 +139,9 @@ for(i in cond){
   figure2 <- ggplot(data=heatmap_df, aes(x=ValueA, y=ValueB))+
     geom_tile(aes(fill=n))+
     theme_classic()+
-    scale_x_continuous(breaks=c(1:6), limits=c(0,7))+
-    scale_y_continuous(breaks=c(1:6), limits=c(0,7))+
-    scale_fill_gradient(low = "#F0F0F0", high = "black", na.value="white", limits=c(1, maximum), breaks=c(1:maximum), labels=c(1:maximum))+
+    scale_x_continuous(breaks=c(Dice_values), limits=c(min(Dice_values)-1, max(Dice_values)+1))+
+    scale_y_continuous(breaks=Dice_values, limits=c(min(Dice_values)-1, max(Dice_values)+1))+
+    scale_fill_gradient(low = "#F0F0F0", high = "black", na.value="white", limits=c(0,maximum), breaks=c(0,maximum), labels=c(0,maximum))+
     ggtitle(paste("Condition", i ))
   #cat("  \n Condition:",  paste(i), "  \n")  
   print(figure2)
@@ -185,9 +154,7 @@ for(i in cond){
 We performed Chi-square tests to see if the reported values of our participants come from a uniform distribution. The results are shown in Table XXX.  
 *Reported values in conditions with a dishonest partner (SD and CD) are significantly different from the uniform distribution, probably because participants cheated and matched player As' values, which in turn were sampled from a screwed distribution. Reported values in conditions with an honest partner (SH and CH) do not differ significantly from the uniform distributions, however, these results does not show whether participants cheated. The distribution can be uniform because they did not cheat or because they cheated by matching player As' values that in turn were sampled from a uniform distribution.*
 
-
 We have specified simulate.p.value = TRUE, so chisq.test will use a test statistic and P-value based on a Monte Carlo approach. In this case, there is no assumed chi-square distribution for the test statistic, so there is also no df parameter involved.  
-
 
 ```{r Chi-square}
 
@@ -214,20 +181,9 @@ kable(df.results, digits=2)
 
 ## The number of doubles
 
-The following figure shows the number of doubles reported by all participants as a function of time in each condition.
-*It can be seen that the number of doubles does not increase over time.*
-
-```{r Doubles and time}
-
-```
-
-The follwowing boxplots show the distribution of the number of doubles in each condition, summed for all rounds of the game.
-
+The following boxplots (Figure XXX) show the distribution of the number of doubles in each condition, summed for all rounds of the game.
 
 ```{r Box plots}
-
-cond <- as.factor(unique(rawdata$Condition_ordered))
-#cond <- as.factor(c("SH", "SD", "CH", "CD"))
 
 number.of.doubles <-  count(filter(rawdata, Double==TRUE), ID, Condition_ordered)
 
@@ -244,10 +200,8 @@ print(figure3)
 
 ```
 
-We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition, see Table XXX.
+We tested, whether the number of doubles is higher than its expected value of 3.33 with Wilcoxon signed-rank U test, separately for each condition (Table XXX).
 *All tests showed that the number of doubles is significantly higher than expected by chance, meaning that participants cheated in all conditions.*
-
-
 
 ```{r Wilcoxon signed-rank U test}
 
@@ -309,16 +263,16 @@ Finally, we tested the effect of predictors with linear regression, see Table XX
 
 ```{r}
 
-#model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
-#summary1 <- summary(model1)
-#kable(summary1$coefficients, digits=3)
+model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
+summary1 <- summary(model1)
+kable(summary1$coefficients, digits=3)
 
 ```
 
-Residual standard error: `r #round(summary1$sigma, 3)`  
-Multiple R-squared: `r #round(summary1$r.squared, 3)`  
-Adjusted R-squared: `r #round(summary1$adj.r.squared, 3)`  
-F-statistic: `r #round(summary1$fstatistic[[1]], 3)`  
+Residual standard error: `r round(summary1$sigma, 3)`  
+Multiple R-squared: `r round(summary1$r.squared, 3)`  
+Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
+F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
 
 
 

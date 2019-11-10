@@ -8,8 +8,6 @@ output:
   html_document: default
 chunk_output_type: console
 ---
-
-This document contains the results of the pilot data. 
   
 ```{r setup, include=FALSE}
 
