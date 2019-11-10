@@ -15,12 +15,13 @@
 
 
 #### PILOT DATA ###
+datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/preregistration/pilot_data" #set the downloaded dataset here. 
 
 # tables that contains the pilot datas. 
-  dishonest_charity <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/pilot_dishonest_charity.csv", header = T)
-  dishonest_nocharity <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/pilot_dishonest_nocharity.csv", header = T)
-  honest_charity <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/pilot_honest_charity.csv", header = T)
-  honest_nocharity <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/pilot_honest_nocharity.csv", header = T)
+  dishonest_charity <- read.csv(paste0(datadir, "/pilot_dishonest_charity.csv"), header = T)
+  dishonest_nocharity <- read.csv(paste0(datadir, "/pilot_dishonest_nocharity.csv"), header = T)
+  honest_charity <- read.csv(paste0(datadir, "/pilot_honest_charity.csv"), header = T)
+  honest_nocharity <- read.csv(paste0(datadir, "/pilot_honest_nocharity.csv"), header = T)
 
 # convert everything to character to avoid potetnial dataloss. 
   dishonest_charity[,1:length(dishonest_charity)] <- sapply(dishonest_charity[,1:length(dishonest_charity)], as.character)
@@ -189,13 +190,13 @@
 
 
 ## save the dataframe into a csv
-write.csv(fulldata_rawdata, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_pilot.csv")
+    write.csv(fulldata_rawdata, file = paste0(datadir, "/data_ztree_pilot.csv"))
 
 
 
 ### ADDING THE RESULTS OF THE QUESTIONNAIRES TO THE DATASET ####
   # read the dataset
-   questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
+   questions <- read.csv(paste0(datadir, "/OTKA K128289 (válaszok)2019.nov.4.csv")) 
   # merging the questionnaries and the game dataset
     fulldata_rawdata_questions <- fulldata_rawdata
     question_length <-   dim(questions)[2] # number of columns of questionnaries
@@ -218,8 +219,9 @@ write.csv(fulldata_rawdata, file = "/Users/mokosjudit/Google Drive/Korrupció_a_
     fulldata_rawdata_questions #this is the dataset that is used in Stat.Rmd
     
 ### saving the datatable that contains all the information about the participants
-    write.csv(fulldata_rawdata_questions, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_and_questions_pilot.csv")
+    write.csv(fulldata_rawdata_questions, file = paste0(datadir,"/data_ztree_and_questions_pilot.csv"))
     
   
     
 
+""

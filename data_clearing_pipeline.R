@@ -220,49 +220,41 @@ fulldata_rawdata <- filter(fulldata_rawdata, ID!=1000) #exclude trial cases.
 fulldata_rawdata <- filter(fulldata_rawdata, ID!=999) #exclude trial cases. 
 
 ## convert all the variables to the right format. (everything was character to avoid potential dataloss)  
-fulldata_rawdata$ID <- as.integer(fulldata_rawdata$ID)
-fulldata_rawdata$age <- as.integer(fulldata_rawdata$age)
-fulldata_rawdata$sex <- as.factor(fulldata_rawdata$sex)
-fulldata_rawdata$Condition <- as.factor(fulldata_rawdata$Condition)
-fulldata_rawdata$Game <- as.factor(fulldata_rawdata$Game)
-fulldata_rawdata$Partner <- as.factor(fulldata_rawdata$Partner)
-fulldata_rawdata$Index <- as.integer(fulldata_rawdata$Index)
-fulldata_rawdata$ValueA <- as.integer(fulldata_rawdata$ValueA)
-fulldata_rawdata$ValueB <- as.integer(fulldata_rawdata$ValueB)
-
-
-# #### Adding the results of tha questionnaries to the dataset ####
-# read the dataset
-setwd(paste(datadir, "/questionnaire/", sep=""))
-temp <- list.files(pattern="*.csv") #list csv filenames in the folder
-
-questions <- read.csv(temp)
-
-# merging the questionnaries and the game dataset
-fulldata_rawdata_questions <- fulldata_rawdata
-question_length <-   dim(questions)[2] # number of columns of questionnaries
-fulldata_length <- dim(fulldata_rawdata)[2] # number of columns of game data
-final_length <- question_length+fulldata_length #
-
-fulldata_rawdata_questions[,c((fulldata_length+1):final_length)] <- NA # datatable with as many empty columns as the questionnaries.
-colnames(fulldata_rawdata_questions)[c((fulldata_length+1):final_length)] <-   colnames(questions)
-
-# convert all the variable in questions to character to avoid potential dataloss.
-questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
-
-# loop that merge the two dataset.
-for(i in 1:length(questions$Idobelyeg))
-{
-  fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.Ã?rja.be.a.korabban.kapott.negyjegyu.szamot.[i]),c((fulldata_length+1):final_length)] <- questions[i,]
-}
-
-fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.kez.mutato.ujjanak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.kez.gyurus.ujjanak.hossza..mm.)
-
-
-#Stat.Rmd use the following dataset: fulldata_rawdata_questions
+  fulldata_rawdata$ID <- as.integer(fulldata_rawdata$ID)
+  fulldata_rawdata$age <- as.integer(fulldata_rawdata$age)
+  fulldata_rawdata$sex <- as.factor(fulldata_rawdata$sex)
+  fulldata_rawdata$Condition <- as.factor(fulldata_rawdata$Condition)
+  fulldata_rawdata$Game <- as.factor(fulldata_rawdata$Game)
+  fulldata_rawdata$Partner <- as.factor(fulldata_rawdata$Partner)
+  fulldata_rawdata$Index <- as.integer(fulldata_rawdata$Index)
+  fulldata_rawdata$ValueA <- as.integer(fulldata_rawdata$ValueA)
+  fulldata_rawdata$ValueB <- as.integer(fulldata_rawdata$ValueB)
+ 
+#### Adding the results of tha questionnaries to the dataset ####
+  # read the dataset
+    questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (valaszok)nov10.csv"))
+  
+  # merging the questionnaries and the game dataset
+    fulldata_rawdata_questions <- fulldata_rawdata
+    question_length <-   dim(questions)[2] # number of columns of questionnaries
+    fulldata_length <- dim(fulldata_rawdata)[2] # number of columns of game data
+    final_length <- question_length+fulldata_length #
+    
+    fulldata_rawdata_questions[,c((fulldata_length+1):final_length)] <- NA # datatable with as many empty columns as the questionnaries. 
+    colnames(fulldata_rawdata_questions)[c((fulldata_length+1):final_length)] <-   colnames(questions)
+  
+  # convert all the variable in questions to character to avoid potential dataloss. 
+    questions[,1:length(questions)] <- sapply(questions[,1:length(questions)], as.character)
+  
+  # loop that merge the two dataset. 
+    for(i in 1:length(questions$Id.ob.elyeg))
+    {
+      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.Ã­rja.be.a.korabban.kapott.negyjegyu.szamot[i]),c((fulldata_length+1):final_length)] <- questions[i,]
+    }
+    
+    fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.mutato.ujj.anak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.gyurus.ujj.anak.hossza..mm.)
 
 ### saving the dataframe that contains all the information about the participants
 
 rawdata <- fulldata_rawdata
-write.csv(rawdata, file = paste(datadir, "results/data_ztree.csv", sep=""))
-
+write.csv(rawdata, file = paste(datadir, "results/data_ztree_and_questions.csv", sep=""))
