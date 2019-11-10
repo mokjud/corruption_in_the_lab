@@ -17,7 +17,7 @@
   library("dplyr")
 
   #download the folder of the original output files of ztree from the supplementary materials
-  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/data" # set that folder here 
+  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/preregistration/prereg_data/data" # set that folder here 
   setwd(datadir)
   #setwd("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv")
   
@@ -242,7 +242,7 @@
   # read the dataset
     #questions <- read.csv(paste(datadir, "template_datasets/", sep=""), header = T)  
     #questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
-    questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok) - A(z) 1. lapon lévő válaszok2019.nov.8.csv") 
+    questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (válaszok) - A(z) 1. lapon lévő válaszok2019.nov.8.csv"))
   
   # merging the questionnaries and the game dataset
     fulldata_rawdata_questions <- fulldata_rawdata
