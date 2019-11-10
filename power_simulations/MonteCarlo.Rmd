@@ -33,7 +33,7 @@ knitr::opts_chunk$set(include=TRUE, echo = FALSE, message = FALSE, warning = FAL
 samplesize = c(36) # sample sizes to test (the number of participants in each group); for the power simulations we used samplesize = 30:40
 simulations = 1 # the number of simulations with a given sample size; for the power simulations we used simulations = 10000
 
-resultsfolder = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/" # this is where the results will be saved
+resultsfolder = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/preregistration/data.analysis/results/" # this is where the results will be saved
 
 seed = Sys.time() # random seed; fort the power simulations seed was "2019-10-01 20:13:36" 
 

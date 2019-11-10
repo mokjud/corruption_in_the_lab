@@ -22,7 +22,7 @@ library(ggplot2)
 library(knitr)
 
 # The csv datafile containing the dataframe called rawdata that has all the results from the ztree game
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/RESULTS/20191110-125402_dummydata.csv" 
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/preregistration/data.analysis/results/data_ztree.csv" 
 
 ```
 
@@ -70,7 +70,7 @@ Data frame column names for rawdata (each row is a dice roll):
 rawdata <- read.csv(datafile)
 rawdata$Condition_ordered <- factor(rawdata$Condition, levels=c("SH", "SD", "CH", "CD"), ordered=TRUE)
 
-Dice_values <- sort(unique(rawdata$ValueA))
+Dice_values <- 1:6
 
 ```
 # Results
@@ -158,13 +158,11 @@ We have specified simulate.p.value = TRUE, so chisq.test will use a test statist
 
 ```{r Chi-square}
 
-probabilities <- c(rep(1/6, 6))
-
 df.results <- data.frame(Condition=cond, df=NA, Chi.square=NA, p.value=NA)
 for(i in cond)
 {
   reported_B <- count(filter(rawdata, Condition==i), ValueB)$n
-  results <- chisq.test(reported_B, p=probabilities, simulate.p.value = TRUE)
+  results <- chisq.test(reported_B, p=c(rep(1/length(reported_B), length(reported_B))), simulate.p.value = TRUE)
   
   df.results[which(df.results$Condition==i), ]$df <- results$parameter
   df.results[which(df.results$Condition==i), ]$Chi.square <- results$statistic
@@ -269,10 +267,10 @@ kable(summary1$coefficients, digits=3)
 
 ```
 
-Residual standard error: `r round(summary1$sigma, 3)`  
-Multiple R-squared: `r round(summary1$r.squared, 3)`  
-Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`  
-F-statistic: `r round(summary1$fstatistic[[1]], 3)`  
+Residual standard error: `r round(summary1$sigma, 3)`
+Multiple R-squared: `r round(summary1$r.squared, 3)`
+Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`
+F-statistic: `r round(summary1$fstatistic[[1]], 3)`
 
 
 
