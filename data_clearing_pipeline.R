@@ -16,11 +16,10 @@
   rm(list=ls())
   library("dplyr")
 
-  #download the folder of the original output files of ztree from the supplementary materials
-  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/preregistration/prereg_data/data" # set that folder here 
+  #download the "data" folder of the original output files of ztree from the supplementary materials
+  datadir <- "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/preregistration/prereg_data/data" # set that "data" folder here 
   setwd(datadir)
-  #setwd("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv")
-  
+
 #### Create a list with that contains all the output file of ztree ####
   temp <- list.files(pattern="*.csv") #list csv filenames in the folder
   myfiles <- lapply(temp, read.csv) #creating a list that contains all the original datasets. the elements of the list are data.frames 
@@ -240,8 +239,6 @@
   
 #### Adding the results of tha questionnaries to the dataset ####
   # read the dataset
-    #questions <- read.csv(paste(datadir, "template_datasets/", sep=""), header = T)  
-    #questions <- read.csv("/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/kerdoiv_eredmenyek/OTKA K128289 (válaszok)2019.nov.4.csv") 
     questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (válaszok) - A(z) 1. lapon lévő válaszok2019.nov.8.csv"))
   
   # merging the questionnaries and the game dataset
@@ -268,6 +265,6 @@
     #Stat.Rmd use the following dataset: fulldata_rawdata_questions
   
   ### saving the datatable that contains all the information about the participants
-    #write.csv(fulldata_rawdata_questions, file = "/Users/mokosjudit/Google Drive/Korrupció_a_laborban_ötletek/eles_nevaltoztassrajta/csv/template_datasets/data_ztree_and_questions_pilot.csv")
+    write.csv(fulldata_rawdata_questions, file = paste0(datadir, "/data_ztree_and_questions_pilot.csv"))
   
   
