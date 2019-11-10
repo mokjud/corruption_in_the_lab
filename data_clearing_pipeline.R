@@ -232,7 +232,9 @@ fulldata_rawdata <- filter(fulldata_rawdata, ID!=999) #exclude trial cases.
  
 #### Adding the results of tha questionnaries to the dataset ####
   # read the dataset
-    questions <- read.csv(paste0(datadir, "/questionnaire/OTKA K128289 (valaszok)nov10.csv"))
+  setwd(paste(datadir, "questionnaire/", sep=""))
+  temp <- list.files(pattern="*.csv") #list csv filenames in the folder
+    questions <- read.csv(paste(datadir, "questionnaire/", temp, sep=""))
   
   # merging the questionnaries and the game dataset
     fulldata_rawdata_questions <- fulldata_rawdata
@@ -249,7 +251,7 @@ fulldata_rawdata <- filter(fulldata_rawdata, ID!=999) #exclude trial cases.
   # loop that merge the two dataset. 
     for(i in 1:length(questions$Id.ob.elyeg))
     {
-      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.Ã­rja.be.a.korabban.kapott.negyjegyu.szamot[i]),c((fulldata_length+1):final_length)] <- questions[i,]
+      fulldata_rawdata_questions[which(fulldata_rawdata_questions$ID==questions$Kerjuk.írja.be.a.korabban.kapott.negyjegyu.szamot[i]),c((fulldata_length+1):final_length)] <- questions[i,]
     }
     
     fulldata_rawdata_questions$Fingerratio <- as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.mutato.ujj.anak.hossza..mm.)/as.numeric(fulldata_rawdata_questions$A.jobb.k.ez.gyurus.ujj.anak.hossza..mm.)
