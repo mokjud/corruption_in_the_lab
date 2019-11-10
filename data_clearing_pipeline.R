@@ -265,6 +265,6 @@
     #Stat.Rmd use the following dataset: fulldata_rawdata_questions
   
   ### saving the datatable that contains all the information about the participants
-    write.csv(fulldata_rawdata_questions, file = paste0(datadir, "/data_ztree_and_questions_pilot.csv"))
+    write.csv(fulldata_rawdata_questions, file = paste0(datadir, "/result/data_ztree_and_questions_pilot.csv"))
   
   
