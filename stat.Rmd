@@ -22,7 +22,7 @@ library(ggplot2)
 library(knitr)
 
 # The csv datafile containing the dataframe called rawdata that has all the results from the ztree game
-datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/preregistration/data.analysis/results/data_ztree.csv" 
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/preregistration/data.analysis/results/data_ztree_and_questions.csv" 
 
 ```
 
@@ -259,6 +259,7 @@ kable(results.wilcox.table3, digits=10)
 
 Finally, we tested the effect of predictors with linear regression, see Table XXX. The dependent variable was the number of reported doubles (interval) and predictors were game (binary), partner (binary) and fingerratio (interval).
 
+
 ```{r}
 
 model1 <- lm(Nbof_doubles ~ Game + Partner + Fingerratio, data=participants)
@@ -271,7 +272,6 @@ Residual standard error: `r round(summary1$sigma, 3)`
 Multiple R-squared: `r round(summary1$r.squared, 3)`
 Adjusted R-squared: `r round(summary1$adj.r.squared, 3)`
 F-statistic: `r round(summary1$fstatistic[[1]], 3)`
-
 
 
 
