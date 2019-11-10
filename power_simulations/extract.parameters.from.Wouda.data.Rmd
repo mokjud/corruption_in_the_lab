@@ -1,0 +1,63 @@
+---
+title: "read_Wouda_data"
+output: word_document
+---
+
+```{r Setup, include=FALSE}
+
+rm(list=ls())
+
+library(knitr)
+library(rmarkdown)
+library(dplyr)
+
+knitr::opts_chunk$set(include=TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+
+# path for the data file that has Wouda et al.'s processed data:
+datafile = "C:/Users/fedor/OneDrive/Documents/DOKUMENTUMOK/Corruption.Project/GitHub/corruption_in_the_lab/power_simulations/Wouda.etal_data.and.script/Wouda_data.RData" 
+```
+
+We used this script to extract the parameters we needed for our power simulations from the data of Wouda et al., 2017, Study 2. We asked the authors for their data and analysis scripts, which they readily provided. Their script titled Preprocess.R uses data from 8 csv files (all from their Study 2) and outputs a datafile containing several variables. This present script of ours loads this datafile, makes some plots and extracts three variables we needed.
+
+```{r Load and visualize data}
+
+load(datafile)
+
+# Distribution of values reported by player A
+valueA_distr_low <- table(a_T2_all_trials$PlayerA) # in the low behavioral treatment group
+valueA_distr_high <- table(a_T9_all_trials$PlayerA) # in the high behavioral treatment group
+
+Low <- valueA_distr_low/sum(valueA_distr_low)
+High <- valueA_distr_high/sum(valueA_distr_high)
+
+barplot(rbind(Low, High), beside=TRUE, 
+        legend.text=TRUE,
+        args.legend = c(x="topleft"),
+        xlab = "Reported values by player As",
+        ylab = "Proportion")
+
+# Probability of reporting doubles by player B
+double_count_low <- a_T2_last_trial$total_doubles # in the low behavioral treatment group
+double_count_high <- a_T9_last_trial$total_doubles # in the high behavioral treatment group
+
+double_prob_low <- sum(double_count_low) / (length(double_count_low)*20) # the probability of reporting doubles in the low behavioral norm group
+double_prob_high <- sum(double_count_high) / (length(double_count_high)*20) # the probability of reporting doubles in the high behavioral norm group
+
+boxplot(double_count_low, double_count_high, 
+        names = c("Low", "High"), 
+        ylab = "The number of doubles/dyad",
+        xlab = "Behavioral treatment")
+```
+
+The distribution of values reported by player As in the high behavioral norm group was the following. We used this distribution to sample values for our simulated dishonest player As:
+
+```{r Distribution of reported values by simulated dishonest player As}
+
+kable(valueA_distr_high)
+
+```
+
+For our simple game with honest partner the probability of reporting a double was taken from their Low behavioral norm group: it was `r double_prob_low` (see their Table 1).   
+
+For our charity game with dishonest partner the probability of reporting a double was taken from their High behavioral norm group: `r double_prob_high`. (The value of 67% reported in Wouda et al., 2017, Table 2 must be a typo.)
+

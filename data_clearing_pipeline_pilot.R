@@ -1,6 +1,7 @@
 ### CORRUPTION IN THE LAB ###
 ### DATA CLEARING PIPELINE FOR PILOT DATA ### 
 ### STARTED 2019. NOV 5 ###
+### AUTHOR: JUDIT MOKOS    ###
 ##############################
 
 # As the original xls output file of the ztree is not suitable for R, we converted all the original output xls files to csv by hand. 
