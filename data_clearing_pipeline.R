@@ -9,7 +9,7 @@
 # - A folder called "data". It should contain all the original ztree output files converted to csv files,
 # - A folder called "template_datasets". It should contain 4 empty template tables (proba_dishonest_charity.csv, proba_dishonest_nocharity.csv, proba_honest_charity.csv, proba_honest_nocharity.csv)
 # - A folder called "results". This script will save all the data from the ztree files arranged as one dataframe, and save it here in a file that can be used by stat.Rmd
-# the dataset of the google questionnaries.
+# - A folder called "questionnaire". It should contain the downloaded dataset of the google questionnaries as a csv file
 
 # Setup and parameters ----------------------------------------------------
 
